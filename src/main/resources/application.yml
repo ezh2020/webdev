@@ -1,0 +1,19 @@
+
+server:
+  #应用服务器端口
+  port: 8080
+  servlet:
+    #统一前缀路径
+    context-path: /
+
+spring:
+  #启动类
+  datasource:
+    username: root
+    password: cql!@#QWE2006
+    url: jdbc:mysql://127.0.0.1:3306/course_management_platform
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

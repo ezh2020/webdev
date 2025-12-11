@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程管理系统</title>
+    <!-- 引入Element UI样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入Vue -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <!-- 引入Element UI组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", Arial, sans-serif;
+            background-color: #530404;
+            line-height: 1.6;
+        }
+
+        #app {
+            min-height: 100vh;
+        }
+
+        .el-header {
+            padding: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .el-main {
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: calc(100vh - 60px);
+        }
+
+        .page-title {
+            text-align: center;
+            color: #303133;
+            margin-bottom: 30px;
+            font-weight: 500;
+            font-size: 28px;
+            padding: 10px 0;
+        }
+
+        .box-card {
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            border: none;
+            background-color: #E6A23C;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #cda547;
+        }
+
+        .card-content {
+            padding: 20px;
+            background-color: #E6A23C;
+        }
+
+        .text {
+            font-size: 15px;
+        }
+
+        .item {
+            margin-bottom: 20px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .item p {
+            margin: 10px 0;
+            line-height: 1.8;
+            display: flex;
+        }
+
+        .item strong {
+            display: inline-block;
+            width: 100px;
+            color: #606266;
+            font-weight: 600;
+        }
+
+        .item span {
+            flex: 1;
+            color: #303133;
+        }
+
+        .teacher-link {
+            color: #409EFF;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .teacher-link:hover {
+            color: #66b1ff;
+            text-decoration: underline;
+        }
+
+        .course-table {
+            background: #002e40;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid #6ea3af;
+        }
+
+        .back-button {
+            margin-bottom: 20px;
+            border-radius: 6px;
+            padding: 10px 20px;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .course-tag {
+            margin-right: 8px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .teacher-courses {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #909399;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #c0c4cc;
+        }
+
+        @media (max-width: 768px) {
+            .el-main {
+                padding: 15px;
+            }
+
+            .detail-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .item p {
+                flex-direction: column;
+            }
+
+            .item strong {
+                width: auto;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <el-container>
+        <el-header>
+            <el-menu
+                    :default-active="activeIndex"
+                    class="el-menu-demo"
+                    mode="horizontal"
+                    @select="handleSelect"
+                    background-color="#545c64"
+                    text-color="#fff"
+                    active-text-color="#ffd04b">
+                <el-menu-item index="1">
+                    <i class="el-icon-notebook-2"></i>
+                    课程列表
+                </el-menu-item>
+                <el-menu-item index="2" v-if="currentCourse">
+                    <i class="el-icon-document"></i>
+                    课程详情
+                </el-menu-item>
+                <el-menu-item index="3" v-if="currentTeacher">
+                    <i class="el-icon-user"></i>
+                    教师详情
+                </el-menu-item>
+            </el-menu>
+        </el-header>
+
+        <el-main>
+            <!-- 课程列表页面 -->
+            <div v-if="activeIndex === '1'">
+                <h2 class="page-title">
+                    <i class="el-icon-notebook-2"></i>
+                    课程信息管理系统
+                </h2>
+
+                <el-table
+                        :data="courses"
+                        style="width: 100%"
+                        class="course-table"
+                        :default-sort = "{prop: 'students', order: 'descending'}"
+                        @row-click="handleCourseClick"
+                        empty-text="暂无课程数据">
+                    <el-table-column
+                            prop="name"
+                            label="课程名称"
+                            width="220"
+                            sortable>
+                        <template slot-scope="scope">
+                            <div style="display: flex; align-items: center;">
+                                <i class="el-icon-notebook-1" style="margin-right: 8px; color: #409EFF;"></i>
+                                <span>{{ scope.row.name }}</span>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                            prop="college"
+                            label="开设学院"
+                            width="200"
+                            sortable>
+                        <template slot-scope="scope">
+                            <div style="display: flex; align-items: center;">
+                                <i class="el-icon-office-building" style="margin-right: 8px; color: #67C23A;"></i>
+                                <span>{{ scope.row.college }}</span>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                            prop="teacher"
+                            label="授课教师"
+                            width="180">
+                        <template slot-scope="scope">
+                            <a class="teacher-link" @click.stop="handleTeacherClick(scope.row.teacher)">
+                                <i class="el-icon-user" style="margin-right: 5px;"></i>
+                                {{ scope.row.teacher }}
+                            </a>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                            prop="students"
+                            label="选课人数"
+                            width="130"
+                            sortable>
+                        <template slot-scope="scope">
+                            <div style="display: flex; align-items: center;">
+                                <i class="el-icon-user-solid" style="margin-right: 8px; color: #E6A23C;"></i>
+                                <span>{{ scope.row.students }}人</span>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                            prop="status"
+                            label="课程状态"
+                            width="120">
+                        <template slot-scope="scope">
+                            <el-tag
+                                    :type="getStatusType(scope.row.status)"
+                                    size="small"
+                                    class="status-badge">
+                                {{ scope.row.status }}
+                            </el-tag>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
+                            label="操作"
+                            width="100">
+                        <template slot-scope="scope">
+                            <el-button
+                                    type="primary"
+                                    size="mini"
+                                    @click.stop="handleCourseClick(scope.row)">
+                                查看详情
+                            </el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+
+                <div style="margin-top: 20px; text-align: center; color: #909399;">
+                    <p>共 {{ courses.length }} 门课程</p>
+                </div>
+            </div>
+
+            <!-- 课程详情页面 -->
+            <div v-if="activeIndex === '2'">
+                <div class="detail-header">
+                    <h2 class="page-title">
+                        <i class="el-icon-document"></i>
+                        课程详细信息
+                    </h2>
+                    <el-button class="back-button" type="primary" icon="el-icon-arrow-left" @click="activeIndex = '1'">返回课程列表</el-button>
+                </div>
+
+                <el-card class="box-card" v-if="currentCourse">
+                    <div slot="header" class="card-header">
+                        <span style="font-size: 20px; font-weight: bold;">{{ currentCourse.name }}</span>
+                        <el-tag
+                                :type="getStatusType(currentCourse.status)"
+                                size="medium"
+                                class="status-badge">
+                            {{ currentCourse.status }}
+                        </el-tag>
+                    </div>
+                    <div class="card-content">
+                        <div class="text item">
+                            <p><strong>课程名称：</strong><span>{{ currentCourse.name }}</span></p>
+                            <p><strong>开设学院：</strong><span>{{ currentCourse.college }}</span></p>
+                            <p><strong>授课教师：</strong>
+                                <span>
+                                        <a class="teacher-link" @click="handleTeacherClick(currentCourse.teacher)">
+                                            <i class="el-icon-user" style="margin-right: 5px;"></i>
+                                            {{ currentCourse.teacher }}
+                                        </a>
+                                    </span>
+                            </p>
+                            <p><strong>教师学院：</strong><span>{{ currentCourse.teacherCollege }}</span></p>
+                            <p><strong>选课人数：</strong><span>{{ currentCourse.students }}人</span></p>
+                            <p><strong>课程学分：</strong><span>{{ currentCourse.credits }}学分</span></p>
+                            <p><strong>课程周期：</strong><span>{{ currentCourse.duration }}</span></p>
+                            <p><strong>课程描述：</strong><span>{{ currentCourse.description }}</span></p>
+                        </div>
+                    </div>
+                </el-card>
+
+                <div v-else class="empty-state">
+                    <i class="el-icon-warning-outline"></i>
+                    <p>未找到课程信息</p>
+                    <el-button type="primary" @click="activeIndex = '1'" style="margin-top: 15px;">返回课程列表</el-button>
+                </div>
+            </div>
+
+            <!-- 教师详情页面 -->
+            <div v-if="activeIndex === '3'">
+                <div class="detail-header">
+                    <h2 class="page-title">
+                        <i class="el-icon-document"></i>
+                        教师详细信息
+                    </h2>
+                    <el-button class="back-button" type="primary" icon="el-icon-arrow-left" @click="activeIndex = '1'">返回课程列表</el-button>
+                </div>
+
+                <el-card class="box-card" v-if="currentTeacher">
+                    <div slot="header" class="card-header">
+                        <span style="font-size: 20px; font-weight: bold;">{{ currentTeacher.name }}</span>
+                        <el-tag
+                                size="medium"
+                                class="status-badge">
+                            教师
+                        </el-tag>
+                    </div>
+                    <div class="card-content">
+                        <div class="text item">
+                            <p><strong>教师姓名：</strong>{{ currentTeacher.name }}</p>
+                            <p><strong>所在学院：</strong>{{ currentTeacher.college }}</p>
+                            <p><strong>工作地点：</strong>{{ currentTeacher.office}}</p>
+                            <p><strong>联系电话：</strong>{{ currentTeacher.phone }}</p>
+                            <p><strong>电子邮箱：</strong>{{ currentTeacher.email }}</p>
+                            <p><strong>开设课程：</strong></p>
+                                <div class="teacher-courses">
+                                    <el-tag v-for="c in currentTeacher.courses" :key="c" class="course-tag" type="info">
+                                        {{ c }}
+                                    </el-tag>
+                                </div>
+                            <p><strong>个人介绍：</strong>{{ currentTeacher.description}}</p>
+                        </div>
+                    </div>
+                </el-card>
+
+                <div v-else class="empty-state">
+                    <i class="el-icon-warning-outline"></i>
+                    <p>未找到教师信息</p>
+                    <el-button type="primary" @click="activeIndex = '1'" style="margin-top: 15px;">返回课程列表</el-button>
+                </div>
+            </div>
+        </el-main>
+    </el-container>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                activeIndex: '1',
+                currentCourse: null,
+                currentTeacher: null,
+                courses: [
+                    {
+                        id: 1,
+                        name: 'Web前端开发',
+                        college: '计算机学院',
+                        teacher: '张老师',
+                        teacherCollege: '计算机学院',
+                        students: 45,
+                        status: '进行中',
+                        credits: 3,
+                        duration: '2023年9月-2024年1月',
+                        description: '本课程主要介绍Web前端开发的基础知识和最新技术，包括HTML5、CSS3、JavaScript以及主流前端框架。'
+                    },
+                    {
+                        id: 2,
+                        name: '数据库原理',
+                        college: '信息学院',
+                        teacher: '李老师',
+                        teacherCollege: '信息学院',
+                        students: 60,
+                        status: '选课',
+                        credits: 4,
+                        duration: '2023年9月-2024年1月',
+                        description: '本课程系统介绍数据库系统的基本原理、设计方法和应用技术，涵盖关系数据库、SQL语言、数据库设计等内容。'
+                    },
+                    {
+                        id: 3,
+                        name: '软件工程',
+                        college: '软件学院',
+                        teacher: '王老师',
+                        teacherCollege: '软件学院',
+                        students: 38,
+                        status: '结课',
+                        credits: 3,
+                        duration: '2023年2月-2023年6月',
+                        description: '本课程介绍软件工程的基本概念、原理和方法，包括软件开发过程、需求分析、系统设计、测试与维护等。'
+                    },
+                    {
+                        id: 4,
+                        name: '计算机网络',
+                        college: '计算机学院',
+                        teacher: '张老师',
+                        teacherCollege: '计算机学院',
+                        students: 52,
+                        status: '进行中',
+                        credits: 4,
+                        duration: '2023年9月-2024年1月',
+                        description: '本课程全面介绍计算机网络的基本原理、体系结构、协议以及网络应用开发技术。'
+                    },
+                    {
+                        id: 5,
+                        name: '数据结构',
+                        college: '信息学院',
+                        teacher: '李老师',
+                        teacherCollege: '信息学院',
+                        students: 48,
+                        status: '选课',
+                        credits: 4,
+                        duration: '2023年9月-2024年1月',
+                        description: '本课程系统讲解各种基本数据结构的逻辑特性、存储表示和基本操作，以及查找和排序的各种算法。'
+                    },
+                    {
+                        id: 6,
+                        name: '操作系统',
+                        college: '计算机学院',
+                        teacher: '赵老师',
+                        teacherCollege: '计算机学院',
+                        students: 42,
+                        status: '进行中',
+                        credits: 4,
+                        duration: '2023年9月-2024年1月',
+                        description: '本课程介绍操作系统的基本概念、原理和实现技术，包括进程管理、内存管理、文件系统和设备管理等。'
+                    }
+                ],
+                teachers: [
+                    {
+                        name: '张老师',
+                        college: '计算机学院',
+                        office: '理工楼301',
+                        phone: '13800138001',
+                        email: 'zhang@university.edu.cn',
+                        courses: ['Web前端开发', '计算机网络', 'JavaScript高级编程'],
+                        description: '主要从事Web前端技术和计算机网络研究，具有丰富的项目开发经验。主持多项国家级科研项目，发表SCI/EI论文20余篇。'
+                    },
+                    {
+                        name: '李老师',
+                        college: '信息学院',
+                        office: '信息楼205',
+                        phone: '13800138002',
+                        email: 'li@university.edu.cn',
+                        courses: ['数据库原理', '数据结构', '大数据技术'],
+                        description: '研究方向为数据库系统和大数据处理，发表多篇学术论文。拥有10年教学经验，曾获校级教学成果一等奖。'
+                    },
+                    {
+                        name: '王老师',
+                        college: '软件学院',
+                        office: '软件楼102',
+                        phone: '13800138003',
+                        email: 'wang@university.edu.cn',
+                        courses: ['软件工程', '软件测试', '项目管理'],
+                        description: '专注于软件工程方法和软件质量管理研究。具有丰富的企业合作经验，参与开发多个大型软件系统。'
+                    },
+                    {
+                        name: '赵老师',
+                        college: '计算机学院',
+                        office: '理工楼305',
+                        phone: '13800138004',
+                        email: 'zhao@university.edu.cn',
+                        courses: ['操作系统', '计算机组成原理', '嵌入式系统'],
+                        description: '研究方向为操作系统内核和嵌入式系统开发。主持完成多项省部级科研项目，获得国家发明专利5项。'
+                    }
+                ]
+            }
+        },
+        methods: {
+            handleSelect(key) {
+                this.activeIndex = key;
+            },
+            handleCourseClick(row) {
+                this.currentCourse = row;
+                this.activeIndex = '2';
+            },
+            handleTeacherClick(teacherName) {
+                const t = this.teachers.find(x => x.name === teacherName);
+                if (t) {
+                    this.currentTeacher = t;   // 关键：现在是对象，不是字符串
+                    this.activeIndex = '3';}
+                else{
+                    this.currentTeacher=NULL;
+                }
+            },
+            getStatusType(status) {
+                switch(status) {
+                    case '结课': return 'info';
+                    case '选课': return 'warning';
+                    case '进行中': return 'success';
+                    default: return '';
+                }
+            }
+        },
+        mounted() {
+            console.log('课程管理系统已加载完成');
+            console.log('课程数量:', this.courses.length);
+            console.log('教师数量:', this.teachers.length);
+        }
+    });
+</script>
+</body>
+</html>
