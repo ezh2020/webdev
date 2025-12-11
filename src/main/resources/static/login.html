@@ -186,11 +186,8 @@
             },
             // 显示注册提示
             showRegister() {
-                // 这里你可以改成跳转到注册页面，例如 /register.html
-                this.$message({
-                    message: '注册功能开发中，可以先使用已有账号登录',
-                    type: 'info'
-                });
+                // 跳转到注册页面
+                window.location.href = '/register.html';
             }
         }
     });
