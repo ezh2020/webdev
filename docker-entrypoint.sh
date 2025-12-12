@@ -33,6 +33,17 @@ init_mysql() {
       FLUSH PRIVILEGES;
 EOSQL
 
+    # 导入初始数据库数据（如果 SQL 文件存在）
+    SQL_FILE="/app/Course Management Platform_sql_20251019 .sql"
+    if [ -f "${SQL_FILE}" ]; then
+      echo "Importing initial data from ${SQL_FILE}..."
+      mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" "${MYSQL_DATABASE}" < "${SQL_FILE}" || {
+        echo "Failed to import initial SQL data from ${SQL_FILE}"
+      }
+    else
+      echo "SQL file ${SQL_FILE} not found, skipping initial data import."
+    fi
+
     # 关闭临时 MySQL
     mysqladmin -uroot -p"${MYSQL_ROOT_PASSWORD}" shutdown || true
     wait "${MYSQL_TEMP_PID}" || true
@@ -65,4 +76,3 @@ start_mysql
 echo "Starting Spring Boot application..."
 cd /app
 exec mvn -B spring-boot:run
-

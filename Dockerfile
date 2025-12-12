@@ -1,7 +1,7 @@
 FROM maven:3.9.9-eclipse-temurin-17
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    MYSQL_ROOT_PASSWORD=cql!@#QWE2006 \
+    MYSQL_ROOT_PASSWORD=test123456 \
     MYSQL_DATABASE=course_management_platform
 
 RUN apt-get update && \
@@ -19,4 +19,3 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 EXPOSE 8080 3306
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-

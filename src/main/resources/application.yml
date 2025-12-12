@@ -10,7 +10,7 @@ spring:
   #启动类
   datasource:
     username: root
-    password: cql!@#QWE2006
+    password: test123456
     url: jdbc:mysql://127.0.0.1:3306/course_management_platform
     driver-class-name: com.mysql.cj.jdbc.Driver
 
