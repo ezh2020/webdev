@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  webdev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: webdev-dev
+    working_dir: /app
+    ports:
+      - "8080:8080"
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "cql!@#QWE2006"
+      MYSQL_DATABASE: "course_management_platform"
+    volumes:
+      - webdev-mysql-data:/var/lib/mysql
+
+volumes:
+  webdev-mysql-data:
+
