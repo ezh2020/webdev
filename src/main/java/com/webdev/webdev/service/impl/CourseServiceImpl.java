@@ -2,11 +2,18 @@ package com.webdev.webdev.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.webdev.webdev.CourseSearchRequest;
 import com.webdev.webdev.mapper.CourseMapper;
 import com.webdev.webdev.model.Course;
 import com.webdev.webdev.service.CourseService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 课程相关业务实现：
@@ -215,5 +222,111 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Course::getSemester, semester);
         return this.list(wrapper);
+    }
+
+    /**
+     * 多条件组合搜索课程（时间 / 学分 / 余量）+ 排序。
+     * 为了兼容不同数据库，这里“余量”和按余量排序在内存中处理。
+     */
+    @Override
+    public List<Course> searchCourses(CourseSearchRequest request) {
+        if (request == null) {
+            // 没有条件时直接返回全部
+            return this.list();
+        }
+
+        LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<>();
+
+        // 学期筛选
+        if (StringUtils.hasText(request.getSemester())) {
+            wrapper.eq(Course::getSemester, request.getSemester());
+        }
+
+        // 创建时间区间筛选
+        LocalDateTime start = request.getStartCreatedAt();
+        LocalDateTime end = request.getEndCreatedAt();
+        if (start != null) {
+            wrapper.ge(Course::getCreatedAt, start);
+        }
+        if (end != null) {
+            wrapper.le(Course::getCreatedAt, end);
+        }
+
+        // 学分区间筛选
+        if (request.getMinCredit() != null) {
+            wrapper.ge(Course::getCredit, request.getMinCredit());
+        }
+        if (request.getMaxCredit() != null) {
+            wrapper.le(Course::getCredit, request.getMaxCredit());
+        }
+
+        // 先按时间 / 学分在数据库中做基础排序（如果请求指定）
+        boolean asc = "asc".equalsIgnoreCase(request.getSortOrder());
+        String sortBy = request.getSortBy();
+        if ("time".equalsIgnoreCase(sortBy)) {
+            wrapper.orderBy(true, asc, Course::getCreatedAt);
+        } else if ("credit".equalsIgnoreCase(sortBy)) {
+            wrapper.orderBy(true, asc, Course::getCredit);
+        }
+
+        List<Course> list = this.list(wrapper);
+
+        // 按余量筛选：在内存中处理，避免复杂 SQL
+        if (request.getMinRemain() != null) {
+            int minRemain = request.getMinRemain();
+            list = list.stream()
+                    .filter(c -> {
+                        Integer max = c.getMaxStudents();
+                        Integer cur = c.getCurrentStudents();
+                        if (max == null || cur == null) {
+                            return false;
+                        }
+                        return max - cur >= minRemain;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        // 如需按余量排序，或者未在数据库排序，则在内存中排序
+        Comparator<Course> comparator = null;
+        if ("remain".equalsIgnoreCase(sortBy)) {
+            comparator = Comparator.comparingInt(c -> {
+                Integer max = c.getMaxStudents();
+                Integer cur = c.getCurrentStudents();
+                if (max == null || cur == null) {
+                    // 没有人数信息的课程排在最后
+                    return Integer.MIN_VALUE;
+                }
+                return max - cur;
+            });
+        } else if ("time".equalsIgnoreCase(sortBy)) {
+            comparator = Comparator.comparing(Course::getCreatedAt, (d1, d2) -> {
+                if (Objects.equals(d1, d2)) {
+                    return 0;
+                }
+                if (d1 == null) {
+                    return -1;
+                }
+                if (d2 == null) {
+                    return 1;
+                }
+                return d1.compareTo(d2);
+            });
+        } else if ("credit".equalsIgnoreCase(sortBy)) {
+            comparator = Comparator.comparing(c -> {
+                Double credit = c.getCredit();
+                return credit != null ? credit : 0.0;
+            });
+        }
+
+        if (comparator != null) {
+            if (!asc) {
+                comparator = comparator.reversed();
+            }
+            list = list.stream()
+                    .sorted(comparator)
+                    .collect(Collectors.toList());
+        }
+
+        return list;
     }
 }

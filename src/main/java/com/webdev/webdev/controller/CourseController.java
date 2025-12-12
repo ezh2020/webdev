@@ -1,5 +1,6 @@
 package com.webdev.webdev.controller;
 
+import com.webdev.webdev.CourseSearchRequest;
 import com.webdev.webdev.Result;
 import com.webdev.webdev.model.Course;
 import com.webdev.webdev.service.CourseService;
@@ -111,6 +112,25 @@ public class CourseController {
     @GetMapping("/listBySemester")
     public Result<List<Course>> listBySemester(@RequestParam String semester) {
         List<Course> courses = courseService.listBySemester(semester);
+        return Result.ok(courses);
+    }
+
+    /**
+     * 课程多条件组合搜索（时间/学分/余量）+ 排序。
+     * 示例：
+     * POST /api/course/search
+     * {
+     *   "semester": "2023-2024-1",
+     *   "minCredit": 2,
+     *   "maxCredit": 4,
+     *   "minRemain": 5,
+     *   "sortBy": "remain",
+     *   "sortOrder": "desc"
+     * }
+     */
+    @PostMapping("/search")
+    public Result<List<Course>> search(@RequestBody CourseSearchRequest request) {
+        List<Course> courses = courseService.searchCourses(request);
         return Result.ok(courses);
     }
 }

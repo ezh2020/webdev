@@ -5,6 +5,8 @@ import com.webdev.webdev.LoginRequest;
 import com.webdev.webdev.RegisterRequest;
 import com.webdev.webdev.Result;
 import com.webdev.webdev.model.User;
+import com.webdev.webdev.service.StudentService;
+import com.webdev.webdev.service.TeacherService;
 import com.webdev.webdev.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -40,6 +42,12 @@ public class UserController {
     //Bean会自动找实现了userService的suerServiceImpl
     private UserService userService;
 
+    @Autowired
+    private StudentService studentService;
+
+    @Autowired
+    private TeacherService teacherService;
+
     // 简单记录登录状态：key = sessionId, value = userId
     private Map<String, Long> loginUsers = new HashMap<>();
 
@@ -67,6 +75,49 @@ public class UserController {
         if (!ok) {
             return Result.fail("用户名已存在或保存失败");
         }
+
+        // 注册成功后，根据角色自动创建学生 / 教师档案（与 User 通过 userId 关联）
+        try {
+            String upperRole = user.getRole();
+            if ("STUDENT".equalsIgnoreCase(upperRole)) {
+                studentService.createForUser(user);
+            } else if ("TEACHER".equalsIgnoreCase(upperRole)) {
+                teacherService.createForUser(user);
+            }
+        } catch (Exception ignored) {
+            // 这里失败不影响用户注册主流程，但会导致没有自动档案，需要后续补数据
+        }
+        return Result.ok(null);
+    }
+
+    /**
+     * 删除用户：同时级联删除学生 / 教师档案。
+     * 简单示例，未做复杂权限控制。
+     */
+    @PostMapping("/delete")
+    public Result<Void> deleteUser(@RequestBody Map<String, Long> body) {
+        Long userId = body != null ? body.get("userId") : null;
+        if (userId == null) {
+            return Result.fail("userId 不能为空");
+        }
+
+        User user = userService.getById(userId);
+        if (user == null) {
+            return Result.fail("用户不存在");
+        }
+
+        String role = user.getRole();
+        try {
+            if ("STUDENT".equalsIgnoreCase(role)) {
+                studentService.deleteByUserId(userId);
+            } else if ("TEACHER".equalsIgnoreCase(role)) {
+                teacherService.deleteByUserId(userId);
+            }
+        } catch (Exception ignored) {
+            // 关联删除失败不阻断用户删除，但可能残留孤立记录
+        }
+
+        userService.removeById(userId);
         return Result.ok(null);
     }
 
