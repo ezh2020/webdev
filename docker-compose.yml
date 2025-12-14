@@ -12,7 +12,7 @@ services:
       - "3306:3306"
     volumes:
       - webdev-mysql-data:/var/lib/mysql
-      # 如需自动导入 SQL，可在这里自行添加挂载；当前改为手动导入
+      # 使用 Dockerfile.mysql 中内置的 init.sql 初始化库，数据持久化在 webdev-mysql-data 卷中
 
   webdev:
     build:
