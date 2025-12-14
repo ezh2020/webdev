@@ -1,20 +1,33 @@
-version: "3.9"
-
 services:
+  mysql:
+    build:
+      context: .
+      dockerfile: Dockerfile.mysql
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "test123456"
+      MYSQL_DATABASE: "course_management_platform"
+      TZ: "Asia/Shanghai"
+    ports:
+      - "3306:3306"
+    volumes:
+      - webdev-mysql-data:/var/lib/mysql
+      # 如需自动导入 SQL，可在这里自行添加挂载；当前改为手动导入
+
   webdev:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: webdev-dev
+    container_name: webdev
     working_dir: /app
     ports:
       - "8080:8080"
-      - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: "test123456"
-      MYSQL_DATABASE: "course_management_platform"
-    volumes:
-      - webdev-mysql-data:/var/lib/mysql
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/course_management_platform"
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "test123456"
+    depends_on:
+      - mysql
 
 volumes:
   webdev-mysql-data:
