@@ -23,11 +23,17 @@ public class AssignmentServiceImpl extends ServiceImpl<AssignmentMapper, Assignm
         if (!StringUtils.hasText(assignment.getTitle())) {
             return "作业标题不能为空";
         }
-        if (assignment.getMaxScore() != null && assignment.getMaxScore() <= 0) {
-            return "maxScore 必须为正数";
+        // 与数据库约束保持一致：max_score 和 deadline 都是 NOT NULL
+        if (assignment.getMaxScore() == null) {
+            return "作业满分不能为空";
         }
-        if (assignment.getDeadline() != null
-                && assignment.getDeadline().isBefore(LocalDateTime.now().minusYears(1))) {
+        if (assignment.getMaxScore() <= 0) {
+            return "作业满分必须为正数";
+        }
+        if (assignment.getDeadline() == null) {
+            return "截止时间不能为空";
+        }
+        if (assignment.getDeadline().isBefore(LocalDateTime.now().minusYears(1))) {
             return "截止时间不合法";
         }
 
@@ -47,7 +53,7 @@ public class AssignmentServiceImpl extends ServiceImpl<AssignmentMapper, Assignm
         }
 
         if (assignment.getMaxScore() != null && assignment.getMaxScore() <= 0) {
-            return "maxScore 必须为正数";
+            return "作业满分必须为正数";
         }
         if (assignment.getDeadline() != null
                 && assignment.getDeadline().isBefore(LocalDateTime.now().minusYears(1))) {

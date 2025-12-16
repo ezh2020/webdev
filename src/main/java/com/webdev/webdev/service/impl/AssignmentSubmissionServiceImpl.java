@@ -5,13 +5,16 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webdev.webdev.mapper.AssignmentSubmissionMapper;
 import com.webdev.webdev.model.Assignment;
 import com.webdev.webdev.model.AssignmentSubmission;
+import com.webdev.webdev.model.CourseSelection;
 import com.webdev.webdev.service.AssignmentService;
 import com.webdev.webdev.service.AssignmentSubmissionService;
+import com.webdev.webdev.service.CourseSelectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +40,9 @@ public class AssignmentSubmissionServiceImpl extends ServiceImpl<AssignmentSubmi
 
     @Autowired
     private AssignmentService assignmentService;
+
+    @Autowired
+    private CourseSelectionService courseSelectionService;
 
     @Override
     public String submit(Long assignmentId,
@@ -123,6 +129,49 @@ public class AssignmentSubmissionServiceImpl extends ServiceImpl<AssignmentSubmi
 
         boolean ok = this.updateById(submission);
         return ok ? null : "更新作业提交失败";
+    }
+
+    @Override
+    public String gradeSubmission(Long id,
+                                  Double score,
+                                  String feedback,
+                                  String status) {
+        if (id == null) {
+            return "提交记录 id 不能为空";
+        }
+        if (score == null) {
+            return "分数不能为空";
+        }
+        if (score < 0) {
+            return "分数不能为负数";
+        }
+
+        AssignmentSubmission submission = this.getById(id);
+        if (submission == null) {
+            return "提交记录不存在";
+        }
+
+        Assignment assignment = assignmentService.getById(submission.getAssignmentId());
+        if (assignment == null) {
+            return "关联的作业不存在";
+        }
+        if (assignment.getMaxScore() != null && score > assignment.getMaxScore()) {
+            return "分数不能大于作业满分 " + assignment.getMaxScore();
+        }
+
+        submission.setScore(score);
+        if (feedback != null) {
+            submission.setFeedback(feedback);
+        }
+        if (status != null && !status.trim().isEmpty()) {
+            submission.setStatus(status.trim());
+        } else {
+            // 默认标记为已打分
+            submission.setStatus("GRADED");
+        }
+
+        boolean ok = this.updateById(submission);
+        return ok ? null : "打分失败";
     }
 
     @Override
@@ -244,8 +293,27 @@ public class AssignmentSubmissionServiceImpl extends ServiceImpl<AssignmentSubmi
             return Collections.emptyList();
         }
 
+        // 只允许查看学生已选课程（以及已修完课程）的作业
+        List<Long> selectedCourseIds = courseSelectionService.list(
+                        new LambdaQueryWrapper<CourseSelection>()
+                                .eq(CourseSelection::getStudentId, studentId)
+                                .and(w -> w.isNull(CourseSelection::getStatus)
+                                        .or()
+                                        .in(CourseSelection::getStatus, List.of("SELECTED", "COMPLETED")))
+                ).stream()
+                .map(CourseSelection::getCourseId)
+                .distinct()
+                .collect(Collectors.toList());
+        if (selectedCourseIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (courseId != null && !selectedCourseIds.contains(courseId)) {
+            return Collections.emptyList();
+        }
+
         // 先筛选出符合条件的作业
         LambdaQueryWrapper<Assignment> assignmentWrapper = new LambdaQueryWrapper<>();
+        assignmentWrapper.in(Assignment::getCourseId, selectedCourseIds);
         assignmentWrapper.eq(courseId != null, Assignment::getCourseId, courseId);
         if (deadlineBefore != null) {
             assignmentWrapper.le(Assignment::getDeadline, deadlineBefore);
@@ -333,9 +401,11 @@ public class AssignmentSubmissionServiceImpl extends ServiceImpl<AssignmentSubmi
         }
         String ext = originalName.substring(originalName.lastIndexOf('.') + 1).toLowerCase();
 
-        Path targetDir = BASE_DIR
+        Path targetDir = Paths.get("").toAbsolutePath()
+                .resolve(BASE_DIR)
                 .resolve(String.valueOf(assignmentId))
-                .resolve(String.valueOf(studentId));
+                .resolve(String.valueOf(studentId))
+                .normalize();
         try {
             Files.createDirectories(targetDir);
         } catch (IOException e) {
@@ -346,7 +416,9 @@ public class AssignmentSubmissionServiceImpl extends ServiceImpl<AssignmentSubmi
         Path targetFile = targetDir.resolve(storedFileName);
 
         try {
-            file.transferTo(targetFile.toFile());
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, targetFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
             throw new RuntimeException("保存提交附件失败：" + e.getMessage(), e);
         }

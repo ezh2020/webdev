@@ -32,6 +32,20 @@ public interface AssignmentSubmissionService extends IService<AssignmentSubmissi
                             MultipartFile file);
 
     /**
+     * 教师为作业提交打分 / 修改分数。
+     *
+     * @param id       提交记录主键 ID
+     * @param score    分数（0 ~ 对应作业 maxScore）
+     * @param feedback 评语（可选）
+     * @param status   状态（可选，例如：GRADED / NEED_REVIEW 等；null 时内部可默认设置为 GRADED）
+     * @return null 表示成功，否则返回错误信息。
+     */
+    String gradeSubmission(Long id,
+                           Double score,
+                           String feedback,
+                           String status);
+
+    /**
      * 删除提交记录，同时尝试删除磁盘上的附件。
      */
     boolean deleteWithFile(Long id);

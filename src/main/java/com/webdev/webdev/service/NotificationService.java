@@ -14,6 +14,16 @@ public interface NotificationService extends IService<Notification> {
                                 Boolean isImportant);
 
     /**
+     * 带类型的通知发布，用于区分 ENROLL / DROP / GRADE 等实时消息。
+     */
+    boolean publishNotification(Long courseId,
+                                Long publisherId,
+                                String title,
+                                String content,
+                                Boolean isImportant,
+                                String type);
+
+    /**
      * 按课程查询通知，按发布时间倒序。
      */
     java.util.List<Notification> listByCourse(Long courseId);

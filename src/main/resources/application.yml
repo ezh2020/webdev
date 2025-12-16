@@ -5,14 +5,28 @@ server:
   servlet:
     #统一前缀路径
     context-path: /
+    encoding:
+      # 统一使用 UTF-8，避免中文在接口 / WebSocket 中出现乱码
+      charset: UTF-8
+      enabled: true
+      force: true
+    session:
+      # 30 分钟无请求，Session 自动失效（滑动过期）
+      timeout: 30m
 
 spring:
   #启动类
   datasource:
-    username: root
-    password: test123456
-    url: jdbc:mysql://127.0.0.1:3306/course_management_platform
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:test123456}
+    # 显式开启 UTF-8，避免从数据库读取中文通知时出现“å®žéªŒ...” 等乱码
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/course_management_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      # 允许上传课程资料/图片/作业附件等（默认 1MB 太小）
+      max-file-size: 50MB
+      max-request-size: 50MB
 
 mybatis-plus:
   configuration:

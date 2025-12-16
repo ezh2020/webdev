@@ -25,7 +25,10 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
         }
         Teacher teacher = new Teacher();
         teacher.setUserId(user.getId());
-        // 其它字段（teacherId、department、title 等）由后续接口补充
+        // teacherId 在数据库中为 NOT NULL 且 UNIQUE，这里先用 userId 生成一个初始工号，
+        // 后续可以通过档案维护接口更新为真实工号，避免插入时违反约束。
+        teacher.setTeacherId("T" + user.getId());
+        // 其它字段（department、title 等）由后续接口补充
         this.save(teacher);
         return teacher;
     }

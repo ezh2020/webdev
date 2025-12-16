@@ -1,127 +1,197 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户注册 - 智慧教学辅助平台</title>
-    <!-- Element UI 样式 -->
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-    <!-- Vue -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-    <!-- Element UI JS -->
-    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-    <!-- axios -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>webdev</title>
 
-        body {
-            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", Arial, sans-serif;
-            background-color: #530404;
-            line-height: 1.6;
-        }
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://unpkg.com/vue-i18n@8/dist/vue-i18n.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-        #app {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  <style>
+    :root{
+      --brand:#7d1b1b;
+      --brand-dark:#651616;
+      --bg:#f2f2f2;
+      --subbar:#e6e6e6;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --link:#2f6f9f;
+      --border:#d0d0d0;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    }
 
-        .register-container {
-            width: 420px;
-            padding: 30px 35px 20px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
+    .topbar{
+      height:56px;
+      background:linear-gradient(0deg,var(--brand),var(--brand-dark));
+      color:#fff;
+      display:flex;
+      align-items:center;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .topbar-inner{
+      width:min(1100px, calc(100% - 40px));
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .brand{ font-weight:700; letter-spacing:.2px; font-size:22px; user-select:none; }
 
-        .register-title {
-            text-align: center;
-            font-size: 22px;
-            margin-bottom: 10px;
-            color: #303133;
-            font-weight: 600;
-        }
+    .subbar{
+      background:var(--subbar);
+      border-bottom:1px solid var(--border);
+      height:44px;
+      display:flex;
+      align-items:center;
+    }
+    .subbar-inner{
+      width:min(1100px, calc(100% - 40px));
+      margin:0 auto;
+      color:var(--muted);
+      font-size:13px;
+    }
 
-        .register-subtitle {
-            text-align: center;
-            font-size: 14px;
-            color: #909399;
-            margin-bottom: 20px;
-        }
+    .page{
+      width:min(1100px, calc(100% - 40px));
+      margin:0 auto;
+      padding:30px 0 56px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap:60px;
+      align-items:start;
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns:1fr; gap:26px; }
+    }
 
-        .form-item {
-            margin-bottom: 18px;
-        }
+    .h1{
+      margin:0;
+      font-size:56px;
+      line-height:1.05;
+      font-weight:700;
+      letter-spacing:-.5px;
+    }
+    .hint{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+      max-width:520px;
+    }
 
-        .role-radio-group {
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-        }
+    .form-wrap{ margin-top:18px; max-width:560px; }
 
-        .footer-links {
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-        }
+    .footer-links {
+      margin-top:14px;
+      font-size:14px;
+      color:var(--muted);
+    }
+    .footer-links a {
+      color:var(--link);
+      text-decoration:none;
+    }
+    .footer-links a:hover{ text-decoration:underline; }
 
-        .footer-links a {
-            color: #409EFF;
-            text-decoration: none;
-        }
+    /* Element UI：去阴影，与背景融为一体 */
+    .el-message, .el-notification{ box-shadow:none !important; border:1px solid var(--border); }
+    .el-dialog, .el-dropdown-menu{ box-shadow:none !important; }
 
-        .footer-links a:hover {
-            text-decoration: underline;
-        }
+    .el-form-item{ margin-bottom:14px; }
+    .el-form-item__label{ color:#374151; padding:0 0 6px; }
+    .el-input__inner{
+      height:42px;
+      border-radius:0;
+      border-color:#cfcfcf;
+      background:#fff;
+    }
+    .el-input__inner:focus{
+      border-color:var(--link);
+      box-shadow:0 0 0 2px rgba(47,111,159,.12);
+    }
+    .el-radio__inner{ border-radius:2px; }
+    .role-radio-group{ display:flex; gap:18px; flex-wrap:wrap; }
 
-        .register-button {
-            width: 100%;
-        }
-    </style>
+    .el-button{ border-radius:0; font-weight:600; }
+    .el-button--primary{
+      background:#607d8b;
+      border-color:#607d8b;
+    }
+    .el-button--primary:hover, .el-button--primary:focus{
+      background:#556f7c;
+      border-color:#556f7c;
+    }
+  </style>
 </head>
-<body>
-<div id="app">
-    <div class="register-container">
-        <div class="register-title">注册账号</div>
-        <div class="register-subtitle">智慧教学辅助平台</div>
 
-        <el-form
+<body>
+  <div id="app">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">{{ $t('app.brand') }}</div>
+        <div>
+          <el-select v-model="locale"
+                     size="mini"
+                     @change="switchLocale"
+                     style="width: 110px;">
+            <el-option label="中文" value="zh"></el-option>
+            <el-option label="English" value="en"></el-option>
+          </el-select>
+        </div>
+      </div>
+    </div>
+    <div class="subbar">
+      <div class="subbar-inner">{{ $t('register.subbar') }}</div>
+    </div>
+    <main class="page">
+      <div class="grid">
+        <section class="form-wrap">
+          <el-form
                 ref="registerForm"
                 :model="form"
                 :rules="rules"
-                label-width="80px">
-            <el-form-item label="用户名" prop="username" class="form-item">
-                <el-input v-model="form.username" placeholder="3-12 个字符"></el-input>
+                label-position="top">
+            <el-form-item :label="$t('register.username')" prop="username" class="form-item">
+                <el-input v-model="form.username" :placeholder="$t('register.usernamePlaceholder')"></el-input>
             </el-form-item>
 
-            <el-form-item label="密码" prop="password" class="form-item">
-                <el-input v-model="form.password" type="password" placeholder="6-16 个字符"></el-input>
+            <el-form-item :label="$t('register.realName')" prop="realName" class="form-item">
+                <el-input v-model="form.realName" :placeholder="$t('register.realNamePlaceholder')"></el-input>
             </el-form-item>
 
-            <el-form-item label="确认密码" prop="confirmPassword" class="form-item">
-                <el-input v-model="form.confirmPassword" type="password" placeholder="再次输入密码"></el-input>
+            <el-form-item :label="$t('register.password')" prop="password" class="form-item">
+                <el-input v-model="form.password" type="password" :placeholder="$t('register.passwordPlaceholder')"></el-input>
             </el-form-item>
 
-            <el-form-item label="身份" prop="role" class="form-item">
+            <el-form-item :label="$t('register.confirmPassword')" prop="confirmPassword" class="form-item">
+                <el-input v-model="form.confirmPassword" type="password" :placeholder="$t('register.confirmPasswordPlaceholder')"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="$t('register.role')" prop="role" class="form-item">
                 <el-radio-group v-model="form.role" class="role-radio-group">
-                    <el-radio label="STUDENT">学生</el-radio>
-                    <el-radio label="TEACHER">教师</el-radio>
+                    <el-radio label="STUDENT">{{ $t('register.roleStudent') }}</el-radio>
+                    <el-radio label="TEACHER">{{ $t('register.roleTeacher') }}</el-radio>
                 </el-radio-group>
             </el-form-item>
 
-            <el-form-item label="邮箱" prop="email" class="form-item">
-                <el-input v-model="form.email" placeholder="用于找回密码（可选）"></el-input>
+            <el-form-item :label="$t('register.email')" prop="email" class="form-item">
+                <el-input v-model="form.email" :placeholder="$t('register.emailPlaceholder')"></el-input>
             </el-form-item>
 
-            <el-form-item label="手机号" prop="phone" class="form-item">
-                <el-input v-model="form.phone" placeholder="用于联系（可选）"></el-input>
+            <el-form-item :label="$t('register.phone')" prop="phone" class="form-item">
+                <el-input v-model="form.phone" :placeholder="$t('register.phonePlaceholder')"></el-input>
             </el-form-item>
 
             <el-form-item>
@@ -130,70 +200,228 @@
                         class="register-button"
                         :loading="loading"
                         @click="handleRegister">
-                    {{ loading ? '注册中...' : '立即注册' }}
+                    {{ loading ? $t('register.submitting') : $t('register.submit') }}
                 </el-button>
             </el-form-item>
         </el-form>
-
-        <div class="footer-links">
-            <span>已有账号？<a href="/login.html">去登录</a></span>
+          <div class="footer-links">
+            <span>{{ $t('register.alreadyHave') }}<a href="/login.html">{{ $t('register.goLogin') }}</a></span>
         </div>
-    </div>
-</div>
+        </section>
+
+        <section>
+          <div class="h1">{{ $t('register.title') }}</div>
+          <div class="hint">{{ $t('register.subtitle1') }}</div>
+          <div class="hint">{{ $t('register.subtitle2') }}</div>
+        </section>
+      </div>
+    </main>
+  </div>
 
 <script>
+    const regMessages = {
+        zh: {
+            app: {
+                brand: 'webdev'
+            },
+            register: {
+                subbar: '账号 · 注册',
+                title: '注册',
+                subtitle1: '创建 webdev 账号后，你可以创建课程、加入课程，并查看作业与通知。',
+                subtitle2: '请填写以下信息完成注册。',
+                username: '用户名',
+                usernamePlaceholder: '3-12 个字符',
+                realName: '真实姓名',
+                realNamePlaceholder: '请填写您的真实姓名',
+                password: '密码',
+                passwordPlaceholder: '6-16 个字符',
+                confirmPassword: '确认密码',
+                confirmPasswordPlaceholder: '再次输入密码',
+                role: '身份',
+                roleStudent: '学生',
+                roleTeacher: '教师',
+                email: '邮箱',
+                emailPlaceholder: '用于找回密码（可选）',
+                phone: '手机号',
+                phonePlaceholder: '用于联系（可选）',
+                submit: '立即注册',
+                submitting: '注册中...',
+                alreadyHave: '已有账号？',
+                goLogin: '去登录',
+                msgFormIncomplete: '请完善表单信息',
+                msgRegisterFailed: '注册失败',
+                msgRegisterSuccess: '注册成功，请使用账号密码登录',
+                validation: {
+                    usernameRequired: '请输入用户名',
+                    usernameLength: '用户名长度在 3 到 12 个字符',
+                    realNameRequired: '请输入真实姓名',
+                    passwordRequired: '请输入密码',
+                    passwordLength: '密码长度在 6 到 16 个字符',
+                    confirmPasswordRequired: '请再次输入密码',
+                    confirmPasswordNotMatch: '两次输入的密码不一致',
+                    roleRequired: '请选择身份'
+                }
+            }
+        },
+        en: {
+            app: {
+                brand: 'webdev'
+            },
+            register: {
+                subbar: 'Account · Sign up',
+                title: 'Sign up',
+                subtitle1: 'Create a webdev account to create or join courses and view assignments and notifications.',
+                subtitle2: 'Please fill in the information below to complete registration.',
+                username: 'Username',
+                usernamePlaceholder: '3-12 characters',
+                realName: 'Full name',
+                realNamePlaceholder: 'Please enter your real name',
+                password: 'Password',
+                passwordPlaceholder: '6-16 characters',
+                confirmPassword: 'Confirm password',
+                confirmPasswordPlaceholder: 'Enter password again',
+                role: 'Role',
+                roleStudent: 'Student',
+                roleTeacher: 'Teacher',
+                email: 'Email',
+                emailPlaceholder: 'Used for password recovery (optional)',
+                phone: 'Phone',
+                phonePlaceholder: 'Used for contact (optional)',
+                submit: 'Sign up now',
+                submitting: 'Signing up...',
+                alreadyHave: 'Already have an account? ',
+                goLogin: 'Sign in',
+                msgFormIncomplete: 'Please complete the form',
+                msgRegisterFailed: 'Sign-up failed',
+                msgRegisterSuccess: 'Registration successful, please sign in with your account',
+                validation: {
+                    usernameRequired: 'Please enter username',
+                    usernameLength: 'Username length must be 3 to 12 characters',
+                    realNameRequired: 'Please enter your real name',
+                    passwordRequired: 'Please enter password',
+                    passwordLength: 'Password length must be 6 to 16 characters',
+                    confirmPasswordRequired: 'Please re-enter password',
+                    confirmPasswordNotMatch: 'The two passwords do not match',
+                    roleRequired: 'Please choose a role'
+                }
+            }
+        }
+    };
+
+    const savedRegLocale = localStorage.getItem('webdev_locale') || 'zh';
+    const regI18n = new VueI18n({
+        locale: savedRegLocale,
+        messages: regMessages
+    });
+
     new Vue({
         el: '#app',
+        i18n: regI18n,
         data() {
-            const validateConfirmPassword = (rule, value, callback) => {
-                if (value === '') {
-                    callback(new Error('请再次输入密码'));
-                } else if (value !== this.form.password) {
-                    callback(new Error('两次输入的密码不一致'));
-                } else {
-                    callback();
-                }
-            };
-
             return {
+                locale: savedRegLocale,
                 form: {
                     username: '',
+                    realName: '',
                     password: '',
                     confirmPassword: '',
                     role: '',
                     email: '',
                     phone: ''
                 },
-                rules: {
-                    username: [
-                        { required: true, message: '请输入用户名', trigger: 'blur' },
-                        { min: 3, max: 12, message: '用户名长度在 3 到 12 个字符', trigger: 'blur' }
-                    ],
-                    password: [
-                        { required: true, message: '请输入密码', trigger: 'blur' },
-                        { min: 6, max: 16, message: '密码长度在 6 到 16 个字符', trigger: 'blur' }
-                    ],
-                    confirmPassword: [
-                        { validator: validateConfirmPassword, trigger: 'blur' }
-                    ],
-                    role: [
-                        { required: true, message: '请选择身份', trigger: 'change' }
-                    ]
-                },
                 loading: false
             };
         },
+        computed: {
+            rules() {
+                const vm = this;
+                return {
+                    username: [
+                        {
+                            validator(rule, value, callback) {
+                                if (!value) {
+                                    callback(new Error(vm.$t('register.validation.usernameRequired')));
+                                } else if (value.length < 3 || value.length > 12) {
+                                    callback(new Error(vm.$t('register.validation.usernameLength')));
+                                } else {
+                                    callback();
+                                }
+                            },
+                            trigger: 'blur'
+                        }
+                    ],
+                    realName: [
+                        {
+                            validator(rule, value, callback) {
+                                if (!value) {
+                                    callback(new Error(vm.$t('register.validation.realNameRequired')));
+                                } else {
+                                    callback();
+                                }
+                            },
+                            trigger: 'blur'
+                        }
+                    ],
+                    password: [
+                        {
+                            validator(rule, value, callback) {
+                                if (!value) {
+                                    callback(new Error(vm.$t('register.validation.passwordRequired')));
+                                } else if (value.length < 6 || value.length > 16) {
+                                    callback(new Error(vm.$t('register.validation.passwordLength')));
+                                } else {
+                                    callback();
+                                }
+                            },
+                            trigger: 'blur'
+                        }
+                    ],
+                    confirmPassword: [
+                        {
+                            validator(rule, value, callback) {
+                                if (!value) {
+                                    callback(new Error(vm.$t('register.validation.confirmPasswordRequired')));
+                                } else if (value !== vm.form.password) {
+                                    callback(new Error(vm.$t('register.validation.confirmPasswordNotMatch')));
+                                } else {
+                                    callback();
+                                }
+                            },
+                            trigger: 'blur'
+                        }
+                    ],
+                    role: [
+                        {
+                            validator(rule, value, callback) {
+                                if (!value) {
+                                    callback(new Error(vm.$t('register.validation.roleRequired')));
+                                } else {
+                                    callback();
+                                }
+                            },
+                            trigger: 'change'
+                        }
+                    ]
+                };
+            }
+        },
         methods: {
+            switchLocale(lang) {
+                this.locale = lang;
+                this.$i18n.locale = lang;
+                localStorage.setItem('webdev_locale', lang);
+            },
             handleRegister() {
                 this.$refs.registerForm.validate((valid) => {
                     if (!valid) {
-                        this.$message.error('请完善表单信息');
+                        this.$message.error(this.$t('register.msgFormIncomplete'));
                         return;
                     }
 
                     this.loading = true;
                     axios.post('/api/user/register', {
                         username: this.form.username,
+                        realName: this.form.realName,
                         password: this.form.password,
                         role: this.form.role,
                         email: this.form.email,
@@ -202,11 +430,11 @@
                         this.loading = false;
                         const data = res.data;
                         if (!data.success) {
-                            this.$message.error(data.message || '注册失败');
+                            this.$message.error(data.message || this.$t('register.msgRegisterFailed'));
                             return;
                         }
                         this.$message({
-                            message: '注册成功，请使用账号密码登录',
+                            message: this.$t('register.msgRegisterSuccess'),
                             type: 'success',
                             duration: 1500,
                             onClose: () => {
@@ -225,4 +453,3 @@
 </script>
 </body>
 </html>
-

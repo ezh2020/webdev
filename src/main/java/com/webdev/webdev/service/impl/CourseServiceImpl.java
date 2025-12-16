@@ -113,7 +113,9 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
             course.setCurrentStudents(0);
         }
         if (!StringUtils.hasText(course.getStatus())) {
-            course.setStatus("CLOSE"); // 默认状态：关闭选课，后续由教师/管理员手动开启
+            // 数据库中 status 字段定义为 ENUM('OPEN', 'CLOSED', 'CANCELLED')，
+            // 这里统一使用 CLOSED 作为“关闭选课”的默认状态，避免插入非法枚举值。
+            course.setStatus("CLOSED");
         }
 
         return this.save(course);

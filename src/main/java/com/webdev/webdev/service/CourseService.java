@@ -21,8 +21,7 @@ public interface CourseService extends IService<Course> {
     List<Course> listByTeacherId(Long teacherId);
 
     /**
-     * 根据学期查询课程列表。
-     * 示例：2024-FALL, 2024-SPRING 等（具体格式根据你的项目约定）。
+     * 根据学期查询课程列表，例如：2024-FALL, 2024-SPRING 等。
      */
     List<Course> listBySemester(String semester);
 

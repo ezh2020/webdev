@@ -25,7 +25,7 @@ public class NotificationController {
     /**
      * 新建并发布一条通知。
      *
-     * 示例请求体：
+     * 请求体示例：
      * {
      *   "courseId": 1,
      *   "title": "期末考试说明",
@@ -38,6 +38,9 @@ public class NotificationController {
     public Result<Notification> create(@RequestBody Notification notification) {
         if (notification == null) {
             return Result.fail("通知内容不能为空");
+        }
+        if (notification.getCourseId() == null) {
+            return Result.fail("courseId 不能为空（通知必须归属到一门课程）");
         }
         if (notification.getTitle() == null || notification.getTitle().trim().isEmpty()) {
             return Result.fail("通知标题不能为空");
@@ -87,7 +90,7 @@ public class NotificationController {
 
     /**
      * 按课程查询通知列表（按发布时间倒序）。
-     * 示例：GET /api/notification/listByCourse?courseId=1
+     * 接口：GET /api/notification/listByCourse?courseId=1
      */
     @GetMapping("/listByCourse")
     public Result<List<Notification>> listByCourse(@RequestParam("courseId") Long courseId) {
@@ -131,4 +134,3 @@ public class NotificationController {
         return Result.ok(null);
     }
 }
-

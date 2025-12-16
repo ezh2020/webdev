@@ -1,5 +1,6 @@
 package com.webdev.webdev.controller;
 
+import com.webdev.webdev.AuthConstants;
 import com.webdev.webdev.ChangePasswordRequest;
 import com.webdev.webdev.LoginRequest;
 import com.webdev.webdev.RegisterRequest;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,8 +38,6 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class UserController {
 
-    private static final String SESSION_USER_ID = "LOGIN_USER_ID";
-
     @Autowired
     //Bean会自动找实现了userService的suerServiceImpl
     private UserService userService;
@@ -50,6 +50,14 @@ public class UserController {
 
     // 简单记录登录状态：key = sessionId, value = userId
     private Map<String, Long> loginUsers = new HashMap<>();
+
+    private User getLoginUser(HttpSession session) {
+        Long userId = (Long) session.getAttribute(AuthConstants.SESSION_USER_ID);
+        if (userId == null) {
+            return null;
+        }
+        return userService.getById(userId);
+    }
 
     /**
      * 学生 / 教师注册接口。
@@ -66,6 +74,7 @@ public class UserController {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword()); // 加密在 UserServiceImpl.register 中进行
+        user.setRealName(request.getRealName());
         user.setRole(role.toUpperCase());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
@@ -92,7 +101,7 @@ public class UserController {
 
     /**
      * 删除用户：同时级联删除学生 / 教师档案。
-     * 简单示例，未做复杂权限控制。
+     * 注意：该接口仅做基础权限校验，实际使用时可按需扩展。
      */
     @PostMapping("/delete")
     public Result<Void> deleteUser(@RequestBody Map<String, Long> body) {
@@ -122,6 +131,22 @@ public class UserController {
     }
 
     /**
+     * 管理员查询所有用户列表。
+     */
+    @GetMapping("/listAll")
+    public Result<List<User>> listAll(HttpSession session) {
+        User current = getLoginUser(session);
+        if (current == null) {
+            return Result.fail("未登录");
+        }
+        if (current.getRole() == null || !"ADMIN".equalsIgnoreCase(current.getRole())) {
+            return Result.fail("当前用户无权限查看用户列表");
+        }
+        List<User> list = userService.list();
+        return Result.ok(list);
+    }
+
+    /**
      * 登录接口：账号密码验证 + 保存登录状态到 Session。
      */
     @PostMapping("/login")
@@ -137,7 +162,7 @@ public class UserController {
         }
 
         // 登录成功：把 userId 写入 Session，并记录在 loginUsers 中
-        session.setAttribute(SESSION_USER_ID, user.getId());
+        session.setAttribute(AuthConstants.SESSION_USER_ID, user.getId());
         loginUsers.put(session.getId(), user.getId());
 
         return Result.ok(user);
@@ -148,7 +173,7 @@ public class UserController {
      */
     @GetMapping("/me")
     public Result<User> me(HttpSession session) {
-        Long userId = (Long) session.getAttribute(SESSION_USER_ID);
+        Long userId = (Long) session.getAttribute(AuthConstants.SESSION_USER_ID);
         if (userId == null) {
             return Result.fail("未登录");
         }
@@ -166,7 +191,7 @@ public class UserController {
     @PostMapping("/changePassword")
     public Result<Void> changePassword(@RequestBody ChangePasswordRequest request,
                                        HttpSession session) {
-        Long userId = (Long) session.getAttribute(SESSION_USER_ID);
+        Long userId = (Long) session.getAttribute(AuthConstants.SESSION_USER_ID);
         if (userId == null) {
             return Result.fail("未登录");
         }
@@ -196,7 +221,7 @@ public class UserController {
      */
     @PostMapping("/logout")
     public Result<Void> logout(HttpSession session) {
-        Long userId = (Long) session.getAttribute(SESSION_USER_ID);
+        Long userId = (Long) session.getAttribute(AuthConstants.SESSION_USER_ID);
         if (userId != null) {
             loginUsers.remove(session.getId());
         }

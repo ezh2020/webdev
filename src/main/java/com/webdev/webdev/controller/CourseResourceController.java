@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,7 +42,7 @@ public class CourseResourceController {
     /**
      * 上传课程资源文件。
      *
-     * 示例：POST /api/courseResource/upload  (multipart/form-data)
+     * 接口：POST /api/courseResource/upload  (multipart/form-data)
      * form-data:
      * - courseId: 1
      * - uploaderId: 1001
@@ -73,7 +74,7 @@ public class CourseResourceController {
 
     /**
      * 按课程查询课程资源列表。
-     * 示例：GET /api/courseResource/listByCourse?courseId=1
+     * 接口：GET /api/courseResource/listByCourse?courseId=1
      */
     @GetMapping("/listByCourse")
     public Result<List<CourseResource>> listByCourse(@RequestParam("courseId") Long courseId) {
@@ -86,7 +87,7 @@ public class CourseResourceController {
 
     /**
      * 删除课程资源（同时尝试删除磁盘上的文件）。
-     * 示例：DELETE /api/courseResource/{id}
+     * 接口：DELETE /api/courseResource/{id}
      */
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable("id") Long id) {
@@ -98,8 +99,44 @@ public class CourseResourceController {
     }
 
     /**
+     * 更新课程资料元信息（重命名/修改说明），不改动文件本体。
+     * 接口：POST /api/courseResource/updateMeta
+     * body:
+     * {
+     *   "id": 1,
+     *   "title": "新名称",
+     *   "description": "可选说明"
+     * }
+     */
+    @PostMapping("/updateMeta")
+    public Result<Void> updateMeta(@RequestBody CourseResource request) {
+        if (request == null || request.getId() == null) {
+            return Result.fail("id 不能为空");
+        }
+        if (!StringUtils.hasText(request.getTitle())) {
+            return Result.fail("title 不能为空");
+        }
+
+        CourseResource db = courseResourceService.getById(request.getId());
+        if (db == null) {
+            return Result.fail("资源不存在");
+        }
+
+        CourseResource toUpdate = new CourseResource();
+        toUpdate.setId(request.getId());
+        toUpdate.setTitle(request.getTitle().trim());
+        toUpdate.setDescription(request.getDescription());
+
+        boolean ok = courseResourceService.updateById(toUpdate);
+        if (!ok) {
+            return Result.fail("更新失败");
+        }
+        return Result.ok(null);
+    }
+
+    /**
      * 下载课程资源文件。
-     * 示例：GET /api/courseResource/download/{id}
+     * 接口：GET /api/courseResource/download/{id}
      */
     @GetMapping("/download/{id}")
     public ResponseEntity<?> download(@PathVariable("id") Long id) {
@@ -126,6 +163,37 @@ public class CourseResourceController {
             return ResponseEntity
                     .ok()
                     .headers(headers)
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(body);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("读取文件失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 预览课程资源文件（适用于图片等需要在页面内展示的场景）。
+     * 接口：GET /api/courseResource/view/{id}
+     */
+    @GetMapping("/view/{id}")
+    public ResponseEntity<?> view(@PathVariable("id") Long id) {
+        Optional<ResourceDownload> opt = courseResourceService.prepareDownload(id);
+        if (!opt.isPresent()) {
+            return ResponseEntity.badRequest().body("文件不存在");
+        }
+
+        ResourceDownload download = opt.get();
+        Path filePath = download.getAbsolutePath();
+
+        try {
+            InputStreamResource body = new InputStreamResource(Files.newInputStream(filePath));
+
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            }
+
+            return ResponseEntity
+                    .ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .body(body);
         } catch (IOException e) {

@@ -1,28 +1,49 @@
 # Repository Guidelines
 
-## Project Structure & Modules
-- Backend Java source lives in `src/main/java/com/webdev/webdev`, grouped by layer: `controller`, `service`, `mapper`, and `model`.
-- Configuration, templates, and static assets live under `src/main/resources` (e.g. `application.yml`, `templates/`, `static/`).
-- Tests are in `src/test/java` (for example `MyDemoTest.java`); add new tests in matching package structures.
+## Project Structure & Module Organization
+- Backend code lives in `src/main/java/com/webdev/webdev`, grouped by layer: `controller`, `service`, `mapper`, `model`, `config`, and `websocket`.
+- Web assets are in `src/main/resources/static` (public HTML such as `index.html`, `login.html`) and `src/main/resources/templates` for server-rendered views.
+- Application configuration is in `src/main/resources/application.yml`.
+- Automated tests live in `src/test/java/com/webdev/webdev` (for example `CourseServiceTest.java`, `PermissionIntegrationTest.java`).
+- Docker and database setup are in the project root: `docker-compose.yml`, `Dockerfile*`, and the SQL snapshot file.
 
-## Build, Test, and Run
-- Build artifact: `./mvnw clean package` – compiles the app and produces a runnable JAR in `target/`.
-- Run locally: `./mvnw spring-boot:run` – starts the Spring Boot application with the current `application.yml`.
-- Run tests: `./mvnw test` – executes the JUnit test suite.
+## Build, Test, and Development Commands
+- Build JAR locally:
+  ```bash
+  ./mvnw clean package
+  ```
+- Run tests:
+  ```bash
+  ./mvnw test
+  ```
+- Run Spring Boot locally:
+  ```bash
+  ./mvnw spring-boot:run
+  ```
+- With Docker (MySQL + dev container):
+  ```bash
+  docker compose up -d --build
+  docker compose exec webdev bash    # then: ./mvnw spring-boot:run
+  ```
 
-## Coding Style & Naming
-- Use Java 17, 4‑space indentation, and standard Spring Boot conventions.
-- Organize classes by layer and suffix: `*Controller`, `*Service`, `*Mapper`, `*Repository` (if added), and domain `*` models under `model/`.
-- Prefer constructor or `@RequiredArgsConstructor` injection (Lombok) for services and controllers.
-- Keep REST endpoints in controllers thin; move business logic into services.
+## Coding Style & Naming Conventions
+- Java 17, Spring Boot 2.7; use 4-space indentation and UTF-8 encoding.
+- Packages are `lowercase`, classes `PascalCase`, methods and fields `camelCase`, constants `UPPER_SNAKE_CASE`.
+- Name components by role: `*Controller`, `*Service`, `*Mapper`, `*Request`, `*Response`, `*Dto`.
+- Prefer constructor or `@RequiredArgsConstructor` injection; avoid field injection for new code.
 
 ## Testing Guidelines
-- Use the Spring Boot testing stack from `spring-boot-starter-test` (JUnit, Mockito).
-- Place tests in `src/test/java` mirroring the main package; name classes `*Test` (e.g. `UserServiceTest`).
-- When adding features, add or update tests to cover typical flows and at least one failure/edge scenario.
+- Use the default Spring Boot test stack from `spring-boot-starter-test` (JUnit 5, MockMvc, etc.).
+- Place unit and slice tests under the matching package in `src/test/java/com/webdev/webdev`.
+- Name test classes `<ClassUnderTest>Test` and methods `should...` to describe behavior.
+- Run `./mvnw test` before pushing; add tests for new endpoints, services, and regressions.
 
-## Commits & Pull Requests
-- Write concise, imperative commit messages, e.g. `Add course enrollment endpoint` or `Fix login redirect`.
-- For pull requests, include: a short summary, list of key changes, any breaking impacts, and how to reproduce or verify (commands, URLs, sample payloads).
-- Link issues or tasks where applicable and mention any database or configuration changes required.
+## Commit & Pull Request Guidelines
+- Write concise, descriptive commit messages (English or Chinese) that state the change and scope, for example: `feat: add course search endpoint`.
+- Keep commits focused; avoid mixing refactors and feature changes.
+- For PRs, include: purpose, key changes, how to run or test, and screenshots/URLs for UI-facing changes (e.g. affected pages in `static/*.html` or `templates/`).
+
+## Security & Configuration Tips
+- Do not commit real credentials for non-local environments; treat values in `application.yml` as local-only defaults.
+- For new configuration, prefer environment variables or Docker compose overrides instead of hardcoding secrets.
 

@@ -5,9 +5,9 @@ services:
       dockerfile: Dockerfile.mysql
     container_name: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: "test123456"
-      MYSQL_DATABASE: "course_management_platform"
-      TZ: "Asia/Shanghai"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-test123456}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-course_management_platform}
+      TZ: ${TZ:-Asia/Shanghai}
     ports:
       - "3306:3306"
     volumes:
@@ -23,9 +23,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/course_management_platform"
-      SPRING_DATASOURCE_USERNAME: "root"
-      SPRING_DATASOURCE_PASSWORD: "test123456"
+      SPRING_DATASOURCE_URL: "${SPRING_DATASOURCE_URL:-jdbc:mysql://mysql:3306/course_management_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}"
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-root}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-test123456}
     depends_on:
       - mysql
 

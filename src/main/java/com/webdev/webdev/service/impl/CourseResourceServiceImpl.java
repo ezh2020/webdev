@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,6 +30,10 @@ public class CourseResourceServiceImpl extends ServiceImpl<CourseResourceMapper,
 
     // 统一的文件大小上限：50MB
     private static final long MAX_FILE_SIZE = 50L * 1024 * 1024;
+
+    private static Path baseDirAbsolute() {
+        return Paths.get("").toAbsolutePath().resolve(BASE_DIR).normalize();
+    }
 
     @Override
     public CourseResource uploadResource(Long courseId,
@@ -53,8 +58,9 @@ public class CourseResourceServiceImpl extends ServiceImpl<CourseResourceMapper,
 
         String ext = originalName.substring(originalName.lastIndexOf('.') + 1).toLowerCase();
 
-        // 构造存储路径：course-files/{courseId}/{uuid}.{ext}
-        Path targetDir = BASE_DIR.resolve(String.valueOf(courseId));
+        // 构造存储路径：{abs}/course-files/{courseId}/{uuid}.{ext}
+        // 注意：不要使用 MultipartFile#transferTo 写入相对路径，部分容器会把相对路径解析到临时目录中，导致找不到目录。
+        Path targetDir = baseDirAbsolute().resolve(String.valueOf(courseId));
         try {
             Files.createDirectories(targetDir);
         } catch (IOException e) {
@@ -65,12 +71,15 @@ public class CourseResourceServiceImpl extends ServiceImpl<CourseResourceMapper,
         Path targetFile = targetDir.resolve(storedFileName);
 
         try {
-            file.transferTo(targetFile.toFile());
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, targetFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
             throw new RuntimeException("保存文件失败：" + e.getMessage(), e);
         }
 
-        String relativePath = targetFile.toString();
+        String relativePath = BASE_DIR.resolve(String.valueOf(courseId)).resolve(storedFileName).toString()
+                .replace("\\", "/");
 
         CourseResource resource = new CourseResource();
         resource.setCourseId(courseId);
@@ -142,12 +151,16 @@ public class CourseResourceServiceImpl extends ServiceImpl<CourseResourceMapper,
     }
 
     private Path resolveToBaseDir(String storedPath) {
-        Path path = Paths.get(storedPath);
-        if (!path.isAbsolute()) {
-            path = BASE_DIR.getParent() != null
-                    ? BASE_DIR.getParent().resolve(path)
-                    : Paths.get("").toAbsolutePath().resolve(path);
+        Path baseAbs = baseDirAbsolute();
+        Path stored = Paths.get(storedPath).normalize();
+        Path abs = stored.isAbsolute()
+                ? stored.toAbsolutePath().normalize()
+                : Paths.get("").toAbsolutePath().resolve(stored).normalize();
+
+        // 防止路径穿越：必须落在 course-files 目录下
+        if (!abs.startsWith(baseAbs)) {
+            return baseAbs.resolve(stored.getFileName()).normalize();
         }
-        return path.normalize();
+        return abs;
     }
 }

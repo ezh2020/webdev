@@ -25,7 +25,10 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         }
         Student student = new Student();
         student.setUserId(user.getId());
-        // 其它字段（studentId、className、major 等）由后续接口补充
+        // studentId 在数据库中为 NOT NULL 且 UNIQUE，这里先用 userId 生成一个初始学号，
+        // 后续可以通过档案维护接口更新为真实学号，避免插入时违反约束。
+        student.setStudentId("S" + user.getId());
+        // 其它字段（className、major 等）由后续接口补充
         this.save(student);
         return student;
     }

@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教师工作台 - 课程管理平台</title>
+    <title>webdev · webdev</title>
 
-    <!-- 字体与基础样式，整体配色参考 openreview 风格（浅色背景 + 蓝色强调） -->
+    <!-- 字体与基础样式，整体配色参考 会议系统 风格（浅色背景 + 蓝色强调） -->
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-i18n@8/dist/vue-i18n.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- 成绩趋势 / 排名图表 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
     <!-- Markdown 富文本编辑器（vditor） -->
     <link rel="stylesheet" href="https://unpkg.com/vditor/dist/index.css">
     <script src="https://unpkg.com/vditor/dist/index.min.js"></script>
@@ -130,13 +133,15 @@
             gap: 16px;
         }
 
-        .flex-2 {
-            flex: 2;
-        }
+	        .flex-2 {
+	            flex: 2;
+	            min-width: 0;
+	        }
 
-        .flex-1 {
-            flex: 1;
-        }
+	        .flex-1 {
+	            flex: 1;
+	            min-width: 0;
+	        }
 
         .course-list-header {
             display: flex;
@@ -216,6 +221,150 @@
                 flex-direction: column;
             }
         }
+    
+        /* =========================
+           webdev 主题（仿 会议系统 风格，但不出现 会议系统 字样）
+           约束：无侧边栏、无阴影、列表与背景融为一体
+        ========================== */
+
+        body {
+            background-color: #f2f2f2;
+        }
+
+        .el-header {
+            background: linear-gradient(0deg, #7d1b1b, #651616);
+            color: #ffffff;
+            box-shadow: none;
+            border-bottom: 1px solid rgba(255,255,255,0.10);
+        }
+
+        .brand-logo {
+            display: none;
+        }
+
+        .brand-title {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+
+        .brand-sub {
+            color: rgba(255,255,255,0.78);
+        }
+
+        .top-right .el-button--text,
+        .top-right .el-dropdown-link,
+        .top-right i {
+            color: #ffffff;
+        }
+        .top-right .el-button--text:hover,
+        .top-right .el-dropdown-link:hover {
+            color: rgba(255,255,255,0.88);
+        }
+
+        .subbar {
+            height: 44px;
+            background: #e6e6e6;
+            border-bottom: 1px solid #d0d0d0;
+            display: flex;
+            align-items: center;
+        }
+        .subbar-inner {
+            width: 100%;
+            padding: 0 24px;
+        }
+
+        .layout-container {
+            min-height: calc(100vh - 108px);
+        }
+
+        /* 顶部菜单（灰色二级条） */
+        .top-menu.el-menu--horizontal {
+            border-bottom: none;
+            background: transparent;
+        }
+        .top-menu.el-menu--horizontal > .el-menu-item {
+            height: 44px;
+            line-height: 44px;
+            border-bottom: 2px solid transparent;
+            padding: 0 14px;
+            font-weight: 600;
+        }
+        .top-menu.el-menu--horizontal > .el-menu-item.is-active {
+            border-bottom-color: #2f6f9f;
+            background: transparent;
+        }
+
+        /* 去除所有“卡片/列表/弹层”的阴影，让内容与背景融为一体 */
+        .card {
+            background: transparent !important;
+            box-shadow: none !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            padding: 12px 0 !important;
+        }
+        .el-dialog,
+        .el-dropdown-menu,
+        .el-popover {
+            box-shadow: none !important;
+        }
+        .el-dialog {
+            border: 1px solid #d0d0d0;
+        }
+
+        /* 表格：无阴影、无条纹底色，仅保留克制的分隔线 */
+        .el-table, .el-table__expanded-cell {
+            background: transparent !important;
+        }
+        .el-table th, .el-table tr, .el-table td {
+            background: transparent !important;
+        }
+        .el-table thead th {
+            background: #e6e6e6 !important;
+            color: #303133;
+            font-weight: 700;
+        }
+        .el-table--striped .el-table__body tr.el-table__row--striped td {
+            background: transparent !important;
+        }
+
+        /* 输入与按钮：偏 会议系统 的低调风格 */
+        .el-input__inner {
+            border-radius: 0 !important;
+        }
+        .el-button {
+            border-radius: 0 !important;
+            font-weight: 600;
+        }
+        .el-button--primary {
+            background: #607d8b !important;
+            border-color: #607d8b !important;
+        }
+        .el-button--primary:hover, .el-button--primary:focus {
+            background: #556f7c !important;
+            border-color: #556f7c !important;
+        }
+
+        .course-detail {
+            background: #f2f2f2;
+            border: 1px solid #d0d0d0;
+            padding: 12px;
+        }
+        .course-detail .title {
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .course-detail .meta {
+            font-size: 13px;
+            color: #606266;
+            line-height: 1.8;
+        }
+        .course-detail .section-title {
+            margin-top: 12px;
+            font-weight: 700;
+        }
+
     </style>
 </head>
 <body>
@@ -226,65 +375,70 @@
             <div class="brand">
                 <div class="brand-logo"></div>
                 <div>
-                    <div class="brand-title">教师工作台</div>
-                    <div class="brand-sub">Course Management · Inspired by OpenReview</div>
+                    <div class="brand-title">{{ $t('app.brand') }}</div>
+                    <div class="brand-sub">{{ $t('teacher.headerSub') }}</div>
                 </div>
             </div>
             <div class="top-right">
                 <el-badge :value="unreadNotificationCount" class="item" :hidden="unreadNotificationCount===0">
                     <el-button type="text" @click="switchTab('notifications')">
                         <i class="el-icon-bell"></i>
-                        通知
+                        {{ $t('teacher.notifications') }}
                     </el-button>
                 </el-badge>
                 <el-dropdown>
                     <span class="el-dropdown-link">
                         <i class="el-icon-user"></i>
-                        {{ currentUser ? currentUser.realName || currentUser.username : '未登录' }}
+                        {{ currentUser ? currentUser.realName || currentUser.username : $t('common.notLoggedIn') }}
                         <i class="el-icon-arrow-down el-icon--right"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item @click.native="switchTab('profile')">个人中心</el-dropdown-item>
-                        <el-dropdown-item divided @click.native="logout">退出登录</el-dropdown-item>
+                        <el-dropdown-item @click.native="switchTab('profile')">{{ $t('teacher.menuProfile') }}</el-dropdown-item>
+                        <el-dropdown-item divided @click.native="logout">{{ $t('teacher.menuLogout') }}</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
+                <el-select v-model="locale"
+                           size="mini"
+                           @change="switchLocale"
+                           style="width: 110px;margin-left:12px;">
+                    <el-option label="中文" value="zh"></el-option>
+                    <el-option label="English" value="en"></el-option>
+                </el-select>
             </div>
         </el-header>
 
-        <el-container class="layout-container">
-            <!-- 左侧菜单 -->
-            <el-aside width="210px">
+        <!-- 顶部灰色二级条：菜单（替代侧边栏） -->
+        <div class="subbar">
+            <div class="subbar-inner">
                 <el-menu
-                        class="side-menu"
+                        class="top-menu"
+                        mode="horizontal"
                         :default-active="activeTab"
                         @select="handleMenuSelect"
-                        background-color="#ffffff"
-                        text-color="#303133"
-                        active-text-color="#409eff">
+                        background-color="transparent"
+                        text-color="#2f6f9f"
+                        active-text-color="#2f6f9f">
                     <el-menu-item index="dashboard">
-                        <i class="el-icon-data-analysis"></i>
-                        <span slot="title">总览</span>
+                        {{ $t('teacher.navDashboard') }}
                     </el-menu-item>
                     <el-menu-item index="courses">
-                        <i class="el-icon-notebook-2"></i>
-                        <span slot="title">我的课程</span>
+                        {{ $t('teacher.navCourses') }}
                     </el-menu-item>
                     <el-menu-item index="assignments">
-                        <i class="el-icon-edit-outline"></i>
-                        <span slot="title">作业管理</span>
+                        {{ $t('teacher.navAssignments') }}
                     </el-menu-item>
                     <el-menu-item index="notifications">
-                        <i class="el-icon-bell"></i>
-                        <span slot="title">通知中心</span>
+                        {{ $t('teacher.navNotifications') }}
                     </el-menu-item>
                     <el-menu-item index="profile">
-                        <i class="el-icon-user"></i>
-                        <span slot="title">个人中心</span>
+                        {{ $t('teacher.menuProfile') }}
                     </el-menu-item>
                 </el-menu>
-            </el-aside>
+            </div>
+        </div>
 
-            <!-- 主内容区 -->
+        <el-container class="layout-container">
+<!-- 主内容区 -->
             <el-main>
                 <!-- 仪表盘 -->
                 <section v-if="activeTab === 'dashboard'">
@@ -305,23 +459,23 @@
                             <div class="card">
                                 <div class="course-list-header">
                                     <div>
-                                        <span style="font-weight:500">我的课程</span>
-                                        <span class="sub-title" style="margin-left:6px">
-                                            共 {{ courses.length }} 门课
-                                        </span>
-                                    </div>
+	                                        <span style="font-weight:500">我的课程</span>
+	                                        <span class="sub-title" style="margin-left:6px">
+	                                            共 {{ coursesAll.length }} 门课
+	                                        </span>
+	                                    </div>
                                     <el-button type="primary" size="mini" icon="el-icon-plus"
                                                @click="openCourseDialog(null)">
                                         发布新课程
                                     </el-button>
                                 </div>
-                                <el-table
-                                        :data="courses"
-                                        size="small"
-                                        stripe
-                                        @row-click="handleCourseRowClick">
-                                    <el-table-column prop="courseCode" label="课程代码" width="120"/>
-                                    <el-table-column prop="courseName" label="课程名称"/>
+	                                <el-table
+	                                        :data="coursesAll"
+	                                        size="small"
+	                                        stripe
+	                                        @row-click="handleCourseRowClick">
+                                <el-table-column prop="courseCode" label="课程代码" width="120"></el-table-column>
+                                    <el-table-column prop="courseName" label="课程名称"></el-table-column>
                                     <el-table-column label="容量 / 余量" width="140">
                                         <template slot-scope="scope">
                                             <span>{{ scope.row.currentStudents || 0 }} /
@@ -332,8 +486,8 @@
                                             </el-tag>
                                         </template>
                                     </el-table-column>
-                                    <el-table-column prop="credit" label="学分" width="80"/>
-                                    <el-table-column prop="semester" label="学期" width="120"/>
+                                    <el-table-column prop="credit" label="学分" width="80"></el-table-column>
+                                    <el-table-column prop="semester" label="学期" width="120"></el-table-column>
                                 </el-table>
                             </div>
                         </div>
@@ -341,10 +495,10 @@
                             <div class="card">
                                 <div style="font-weight:500;margin-bottom:8px;">关键指标</div>
                                 <div class="flex-row">
-                                    <div class="flex-1 metric-card">
-                                        <div class="metric-label">课程数量</div>
-                                        <div class="metric-value">{{ courses.length }}</div>
-                                    </div>
+	                                    <div class="flex-1 metric-card">
+	                                        <div class="metric-label">课程数量</div>
+	                                        <div class="metric-value">{{ coursesAll.length }}</div>
+	                                    </div>
                                     <div class="flex-1 metric-card">
                                         <div class="metric-label">作业数量</div>
                                         <div class="metric-value">{{ dashboardMetrics.assignmentCount }}</div>
@@ -398,25 +552,25 @@
                     <div class="card" style="margin-bottom:16px;">
                         <el-form :inline="true" :model="courseFilter" size="small">
                             <el-form-item label="学期">
-                                <el-input v-model="courseFilter.semester" placeholder="例如 2023-2024-1" clearable/>
+                                <el-input v-model="courseFilter.semester" placeholder="例如 2023-2024-1" clearable></el-input>
                             </el-form-item>
                             <el-form-item label="学分区间">
-                                <el-input-number v-model="courseFilter.minCredit" :min="0" :max="20" controls-position="right"/>
+                                <el-input-number v-model="courseFilter.minCredit" :min="0" :max="20" controls-position="right"></el-input-number>
                                 <span style="margin:0 6px;">~</span>
-                                <el-input-number v-model="courseFilter.maxCredit" :min="0" :max="20" controls-position="right"/>
+                                <el-input-number v-model="courseFilter.maxCredit" :min="0" :max="20" controls-position="right"></el-input-number>
                             </el-form-item>
                             <el-form-item label="最小余量">
-                                <el-input-number v-model="courseFilter.minRemain" :min="0" :max="500" controls-position="right"/>
+                                <el-input-number v-model="courseFilter.minRemain" :min="0" :max="500" controls-position="right"></el-input-number>
                             </el-form-item>
                             <el-form-item label="排序">
                                 <el-select v-model="courseFilter.sortBy" style="width:140px" clearable>
-                                    <el-option label="按创建时间" value="time"/>
-                                    <el-option label="按学分" value="credit"/>
-                                    <el-option label="按余量" value="remain"/>
+                                    <el-option label="按创建时间" value="time"></el-option>
+                                    <el-option label="按学分" value="credit"></el-option>
+                                    <el-option label="按余量" value="remain"></el-option>
                                 </el-select>
                                 <el-select v-model="courseFilter.sortOrder" style="width:120px;margin-left:6px;">
-                                    <el-option label="降序" value="desc"/>
-                                    <el-option label="升序" value="asc"/>
+                                    <el-option label="降序" value="desc"></el-option>
+                                    <el-option label="升序" value="asc"></el-option>
                                 </el-select>
                             </el-form-item>
                             <el-form-item>
@@ -433,16 +587,16 @@
                                         :data="courses"
                                         @row-click="handleCourseRowClick"
                                         highlight-current-row>
-                                    <el-table-column type="index" width="50"/>
-                                    <el-table-column prop="courseCode" label="课程代码" width="120"/>
-                                    <el-table-column prop="courseName" label="课程名称"/>
-                                    <el-table-column prop="credit" label="学分" width="70"/>
+                                    <el-table-column type="index" width="50"></el-table-column>
+                                    <el-table-column prop="courseCode" label="课程代码" width="120"></el-table-column>
+                                    <el-table-column prop="courseName" label="课程名称"></el-table-column>
+                                    <el-table-column prop="credit" label="学分" width="70"></el-table-column>
                                     <el-table-column label="容量/余量" width="120">
                                         <template slot-scope="scope">
                                             {{ scope.row.currentStudents || 0 }}/{{ scope.row.maxStudents || 0 }}
                                         </template>
                                     </el-table-column>
-                                    <el-table-column prop="semester" label="学期" width="120"/>
+                                    <el-table-column prop="semester" label="学期" width="120"></el-table-column>
                                     <el-table-column label="操作" width="190">
                                         <template slot-scope="scope">
                                             <el-button type="text" size="mini"
@@ -458,26 +612,94 @@
                         </div>
                         <div class="flex-1">
                             <div class="card">
-                                <div class="course-list-header">
-                                    <span style="font-weight:500">选课名单</span>
-                                    <div v-if="selectedCourse">
-                                        <span class="chip">
-                                            <span class="chip-dot"></span>
-                                            {{ selectedCourse.courseName }} 的学生
-                                        </span>
-                                    </div>
-                                </div>
-                                <el-table v-if="selectedCourseSelections.length"
-                                          :data="selectedCourseSelections"
-                                          size="small"
-                                          height="360">
-                                    <el-table-column prop="studentId" label="学生ID" width="120"/>
-                                    <el-table-column prop="status" label="状态" width="120"/>
-                                    <el-table-column prop="finalScore" label="期末成绩" width="100"/>
-                                </el-table>
-                                <div v-else class="sub-title">请选择左侧课程查看实时选课名单。</div>
-                            </div>
-                        </div>
+	                                <div class="course-list-header">
+	                                    <span style="font-weight:500">课程详情</span>
+	                                    <div v-if="selectedCourse">
+	                                        <el-tag size="mini" :type="selectedCourse.status==='OPEN' ? 'success' : 'info'">
+	                                            {{ selectedCourse.status || 'CLOSED' }}
+	                                        </el-tag>
+	                                    </div>
+	                                </div>
+	                                <div v-if="selectedCourse">
+	                                    <div class="course-detail">
+	                                        <div class="title">
+	                                            {{ selectedCourse.courseCode }} · {{ selectedCourse.courseName }}
+	                                        </div>
+	                                        <div class="meta">
+	                                            学期：{{ selectedCourse.semester || '-' }} · 学分：{{ selectedCourse.credit || '-' }}<br>
+	                                            容量：{{ selectedCourse.currentStudents || 0 }}/{{ selectedCourse.maxStudents || 0 }}
+	                                            （余 {{ getRemain(selectedCourse) }}）
+	                                        </div>
+	                                        <div class="meta" v-if="selectedCourse.description" style="margin-top:8px;">
+	                                            {{ selectedCourse.description | ellipsis(120) }}
+	                                        </div>
+	                                        <div class="section-title">选课名单</div>
+	                                    </div>
+	                                    <el-table v-if="selectedCourseSelections.length"
+	                                              :data="selectedCourseSelections"
+	                                              size="small"
+	                                              height="240"
+	                                              style="margin-top:8px;">
+	                                        <el-table-column prop="studentNo" label="学号" width="110"></el-table-column>
+	                                        <el-table-column prop="realName" label="姓名" width="110"></el-table-column>
+	                                        <el-table-column prop="className" label="班级" min-width="140"></el-table-column>
+	                                        <el-table-column prop="status" label="状态" width="110"></el-table-column>
+	                                        <el-table-column prop="finalScore" label="总评" width="90">
+	                                            <template slot-scope="scope">
+	                                                <span v-if="scope.row.finalScore != null">{{ scope.row.finalScore }}</span>
+	                                                <span v-else class="sub-title">未发布</span>
+	                                            </template>
+	                                        </el-table-column>
+	                                        <el-table-column label="操作" width="150">
+	                                            <template slot-scope="scope">
+	                                                <el-button type="text" size="mini"
+	                                                           @click.stop="openStudentDetail(scope.row)">详情</el-button>
+	                                                <el-button type="text" size="mini"
+	                                                           @click.stop="openFinalGradeDialog(scope.row)">总评</el-button>
+	                                            </template>
+	                                        </el-table-column>
+	                                    </el-table>
+	                                    <div v-else class="sub-title" style="margin-top:8px;">暂无选课记录。</div>
+
+	                                    <div class="course-list-header" style="margin-top:14px;">
+	                                        <span style="font-weight:500">课程资料</span>
+	                                        <el-button type="primary" size="mini" icon="el-icon-upload2"
+	                                                   @click="openUploadResource(selectedCourse.id)">
+	                                            上传资料
+	                                        </el-button>
+	                                    </div>
+	                                    <el-table v-if="resourceCourseId === selectedCourse.id && courseResources.length"
+	                                              :data="courseResources"
+	                                              size="small"
+	                                              height="240"
+	                                              style="margin-top:8px;">
+	                                        <el-table-column prop="title" label="名称"></el-table-column>
+	                                        <el-table-column label="大小" width="90">
+	                                            <template slot-scope="scope">
+	                                                {{ formatFileSize(scope.row.fileSize) }}
+	                                            </template>
+	                                        </el-table-column>
+	                                        <el-table-column label="上传时间" width="160">
+	                                            <template slot-scope="scope">
+	                                                {{ formatDateTime(scope.row.uploadedAt) }}
+	                                            </template>
+	                                        </el-table-column>
+	                                        <el-table-column label="操作" width="200">
+	                                            <template slot-scope="scope">
+	                                                <el-button type="text" size="mini"
+	                                                           @click.stop="downloadResource(scope.row)">下载</el-button>
+	                                                <el-button type="text" size="mini"
+	                                                           @click.stop="openRenameResource(scope.row)">重命名</el-button>
+	                                                <el-button type="text" size="mini" style="color:#f56c6c"
+	                                                           @click.stop="deleteResource(scope.row)">删除</el-button>
+	                                            </template>
+	                                        </el-table-column>
+	                                    </el-table>
+	                                    <div v-else class="sub-title" style="margin-top:8px;">暂无课程资料。</div>
+	                                </div>
+	                                <div v-else class="sub-title">点击左侧课程行，查看课程信息与选课名单。</div>
+	                            </div>
+	                        </div>
                     </div>
                 </section>
 
@@ -495,28 +717,28 @@
                         </div>
                     </div>
 
-                    <div class="card">
-                        <el-form :inline="true" size="small">
-                            <el-form-item label="选择课程">
-                                <el-select v-model="assignmentCourseId" placeholder="选择一门课程" style="width:260px"
-                                           @change="loadAssignmentsForCourse">
-                                    <el-option
-                                            v-for="c in courses"
-                                            :key="c.id"
-                                            :label="c.courseName + ' (' + c.courseCode + ')'"
-                                            :value="c.id"/>
-                                </el-select>
+	                    <div class="card">
+	                        <el-form :inline="true" size="small">
+	                            <el-form-item label="选择课程">
+		                                <el-select v-model="assignmentCourseId" placeholder="选择一门课程" style="width:260px"
+		                                           @change="loadAssignmentsForCourse">
+	                                        <el-option
+	                                            v-for="c in coursesAll"
+	                                            :key="c.id"
+	                                            :label="c.courseName + ' (' + c.courseCode + ')'"
+	                                            :value="c.id"></el-option>
+	                                </el-select>
                             </el-form-item>
-                            <el-form-item v-if="assignmentCourseId">
-                                <el-button type="primary" size="small" icon="el-icon-plus"
-                                           @click="openAssignmentDialog(null)">
-                                    发布作业
-                                </el-button>
-                            </el-form-item>
-                        </el-form>
-                    </div>
+	                            <el-form-item v-if="assignmentCourseId">
+	                                <el-button type="primary" size="small" icon="el-icon-plus"
+	                                           @click="openAssignmentDialog(null)">
+	                                    发布作业
+	                                </el-button>
+	                            </el-form-item>
+	                        </el-form>
+	                    </div>
 
-                    <div class="flex-row" v-if="assignmentCourseId">
+	                    <div class="flex-row" v-if="assignmentCourseId">
                         <div class="flex-2">
                             <div class="card">
                                 <div class="course-list-header">
@@ -527,15 +749,18 @@
                                         @row-click="handleAssignmentRowClick"
                                         highlight-current-row
                                         size="small">
-                                    <el-table-column type="index" width="50"/>
-                                    <el-table-column prop="title" label="标题"/>
-                                    <el-table-column prop="maxScore" label="满分" width="80"/>
-                                    <el-table-column prop="deadline" label="截止时间" width="180"/>
-                                    <el-table-column label="操作" width="200">
+                                    <el-table-column type="index" width="50"></el-table-column>
+                                    <el-table-column prop="title" label="标题"></el-table-column>
+                                    <el-table-column prop="maxScore" label="满分" width="80"></el-table-column>
+                                    <el-table-column prop="deadline" label="截止时间" width="180">
+                                        <template slot-scope="scope">
+                                            {{ formatDateTime(scope.row.deadline) }}
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column label="操作" width="220">
                                         <template slot-scope="scope">
                                             <el-button type="text" size="mini"
-                                                       @click.stop="openAssignmentDialog(scope.row)">编辑
-                                            </el-button>
+                                                       @click.stop="openAssignmentDialog(scope.row)">编辑</el-button>
                                             <el-button type="text" size="mini"
                                                        @click.stop="deleteAssignment(scope.row)">删除</el-button>
                                             <el-button type="text" size="mini"
@@ -548,29 +773,88 @@
                         <div class="flex-1">
                             <div class="card">
                                 <div class="course-list-header">
-                                    <span style="font-weight:500">成绩统计</span>
-                                </div>
-                                <el-table
-                                        v-if="currentSubmissions.length"
-                                        :data="currentSubmissions"
-                                        size="small"
-                                        height="220">
-                                    <el-table-column prop="studentId" label="学生ID" width="110"/>
-                                    <el-table-column prop="score" label="分数" width="80"/>
-                                    <el-table-column prop="status" label="状态" width="100"/>
-                                </el-table>
-                                <div v-else class="sub-title">选择一份作业查看提交与成绩。</div>
-
-                                <div style="margin-top:12px;">
-                                    <div class="trend-chart-placeholder">
-                                        成绩趋势图 / 排名图可在此引入图表库（例如 ECharts），
-                                        当前示例仅为占位。
+                                    <div>
+                                        <span style="font-weight:500">成绩统计</span>
+                                        <span class="sub-title" v-if="currentAssignment">
+                                            当前作业：{{ currentAssignment.title }}
+                                            <span v-if="currentAssignmentAverage != null">
+                                                · 平均分：{{ Number(currentAssignmentAverage).toFixed(1) }}
+                                            </span>
+                                        </span>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+	                                <el-table
+	                                        v-if="currentSubmissions.length"
+	                                        :data="currentSubmissions"
+	                                        size="small"
+	                                        height="220">
+	                                    <el-table-column prop="studentNo" label="学号" width="120"></el-table-column>
+	                                    <el-table-column prop="realName" label="姓名" width="110"></el-table-column>
+	                                    <el-table-column prop="score" label="分数" width="80"></el-table-column>
+	                                    <el-table-column prop="status" label="状态" width="100"></el-table-column>
+	                                    <el-table-column label="操作" width="160">
+	                                        <template slot-scope="scope">
+	                                            <el-button type="text" size="mini"
+	                                                       v-if="scope.row.attachmentPath"
+	                                                       @click.stop="downloadSubmissionAttachment(scope.row)">
+	                                                附件
+	                                            </el-button>
+	                                            <el-button type="text" size="mini"
+	                                                       @click.stop="gradeSubmission(scope.row)">
+	                                                {{ scope.row.score == null ? '打分' : '修改分数' }}
+	                                            </el-button>
+	                                            <el-button type="text" size="mini"
+	                                                       @click.stop="openStudentTrend(scope.row)">
+	                                                趋势
+	                                            </el-button>
+	                                        </template>
+	                                    </el-table-column>
+	                                </el-table>
+                                <div v-else class="sub-title">选择一份作业查看提交与成绩。</div>
+
+	                                <div style="margin-top:12px;">
+	                                    <div id="assignment-score-trend" class="trend-chart-placeholder">
+	                                        选择右侧某位学生，可查看该学生在本课程中的成绩变化趋势。
+	                                    </div>
+	                                </div>
+
+	                                <div style="margin-top:14px;">
+	                                    <div class="course-list-header">
+	                                        <span style="font-weight:500">作业附件</span>
+	                                        <el-button v-if="currentAssignment" type="primary" size="mini" icon="el-icon-upload2"
+	                                                   @click="openUploadAssignmentResource">
+	                                            上传附件
+	                                        </el-button>
+	                                    </div>
+	                                    <el-table
+	                                            v-if="currentAssignment && getResourcesForAssignment(currentAssignment.id).length"
+	                                            :data="getResourcesForAssignment(currentAssignment.id)"
+	                                            size="small"
+	                                            height="180"
+	                                            style="margin-top:8px;">
+	                                        <el-table-column prop="title" label="名称"></el-table-column>
+	                                        <el-table-column label="大小" width="90">
+	                                            <template slot-scope="scope">
+	                                                {{ formatFileSize(scope.row.fileSize) }}
+	                                            </template>
+	                                        </el-table-column>
+	                                        <el-table-column label="操作" width="170">
+	                                            <template slot-scope="scope">
+	                                                <el-button type="text" size="mini"
+	                                                           @click.stop="downloadResource(scope.row)">下载</el-button>
+	                                                <el-button type="text" size="mini"
+	                                                           @click.stop="openRenameResource(scope.row)">重命名</el-button>
+	                                                <el-button type="text" size="mini" style="color:#f56c6c"
+	                                                           @click.stop="deleteResource(scope.row)">删除</el-button>
+	                                            </template>
+	                                        </el-table-column>
+	                                    </el-table>
+	                                    <div v-else class="sub-title" style="margin-top:8px;">选择一份作业后可管理附件。</div>
+	                                </div>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </section>
 
                 <!-- 通知中心 -->
                 <section v-if="activeTab === 'notifications'">
@@ -614,13 +898,9 @@
                                 <p class="sub-title">
                                     当前状态：{{ wsStatus }}
                                 </p>
-                                <el-button size="mini" @click="initWebSocket">重新连接</el-button>
-                                <p class="sub-title" style="margin-top:12px;">
-                                    注意：需要后端提供 WebSocket 服务端（例如 /ws/notification），
-                                    前端已通过 <code>new WebSocket()</code> 预留接入点。
-                                </p>
-                            </div>
-                        </div>
+	                                <el-button size="mini" @click="initWebSocket">重新连接</el-button>
+	                            </div>
+	                        </div>
                     </div>
                 </section>
 
@@ -683,28 +963,75 @@
                                 </el-form>
                             </div>
                         </div>
-                        <div class="flex-1">
-                            <div class="card">
-                                <div style="font-weight:500;margin-bottom:12px;">会话与权限</div>
-                                <p class="sub-title">
-                                    当前登录方式为后端 Session。
-                                    你计划使用 JWT 或 Redis 会话时，可以在前端：
-                                </p>
-                                <ul class="sub-title" style="margin-left:16px;margin-top:6px;line-height:1.8;">
-                                    <li>在登录接口响应中保存 <code>accessToken</code> / <code>refreshToken</code> 到内存或安全存储；</li>
-                                    <li>通过 Axios 拦截器在每次请求的 Header 中附加 <code>Authorization: Bearer &lt;token&gt;</code>；</li>
-                                    <li>使用 <code>lastActiveTime</code> 记录最近操作时间，超过 30 分钟自动退出；</li>
-                                    <li>收到后端 401/403 响应时，清理本地令牌并跳转到登录页。</li>
-                                </ul>
-                                <p class="sub-title" style="margin-top:8px;">
-                                    这些都是前端能力，需要后端新增 JWT 登录接口和 Redis 会话支持后即可落地。
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+	                        <div class="flex-1"></div>
+	                    </div>
+	                </section>
             </el-main>
         </el-container>
+
+        <!-- 课程发布/编辑对话框 -->
+        <el-dialog
+                :title="courseDialogTitle"
+                :visible.sync="courseDialogVisible"
+                width="560px"
+                @close="resetCourseForm">
+            <el-form
+                    ref="courseFormRef"
+                    :model="courseForm"
+                    :rules="courseRules"
+                    label-width="92px">
+                <el-form-item label="课程代码" prop="courseCode">
+                    <el-input v-model.trim="courseForm.courseCode" maxlength="20" show-word-limit
+                              placeholder="例如 CS101 / WEBDEV-01"></el-input>
+                </el-form-item>
+                <el-form-item label="课程名称" prop="courseName">
+                    <el-input v-model.trim="courseForm.courseName" maxlength="100" show-word-limit
+                              placeholder="例如 Web 开发基础"></el-input>
+                </el-form-item>
+                <el-form-item label="学分" prop="credit">
+	                    <el-input-number v-model="courseForm.credit" :min="0.5" :max="20" :step="0.5"
+	                                     controls-position="right" style="width: 180px;"></el-input-number>
+                </el-form-item>
+                <el-form-item label="学期" prop="semester">
+                    <el-select v-model="courseForm.semester"
+                               filterable
+                               allow-create
+                               default-first-option
+                               placeholder="例如 2023-2024-1（且不能是过去学期）"
+                               style="width: 320px;">
+                        <el-option v-for="s in getSemesterOptions()" :key="s" :label="s" :value="s"></el-option>
+                    </el-select>
+                    <el-button size="mini" style="margin-left:8px;" @click="courseForm.semester = getSuggestedSemester()">
+                        当前学期
+                    </el-button>
+                </el-form-item>
+                <el-form-item label="容量上限" prop="maxStudents">
+	                    <el-input-number v-model="courseForm.maxStudents" :min="0" :max="500" :step="1"
+	                                     controls-position="right" style="width: 180px;"></el-input-number>
+                    <span class="sub-title" style="margin-left:8px;">可选，默认 50</span>
+                </el-form-item>
+                <el-form-item label="选课状态" prop="status">
+                    <el-select v-model="courseForm.status" placeholder="默认 CLOSED" style="width: 180px;">
+	                        <el-option label="OPEN（开放选课）" value="OPEN"></el-option>
+	                        <el-option label="CLOSED（关闭选课）" value="CLOSED"></el-option>
+	                        <el-option label="CANCELLED（已取消）" value="CANCELLED"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="课程简介">
+                    <el-input type="textarea" :rows="3" v-model="courseForm.description"
+                              placeholder="可选；支持后续用「简介」按钮打开 Markdown 编辑器进行精修"></el-input>
+                </el-form-item>
+                <el-form-item v-if="courseForm.id">
+                    <div class="sub-title">
+                        当前已选人数：{{ courseForm.currentStudents || 0 }}（修改容量时需 ≥ 已选人数）
+                    </div>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="courseDialogVisible = false">取 消</el-button>
+                <el-button type="primary" :loading="courseSubmitting" @click="submitCourseForm">确 定</el-button>
+            </span>
+        </el-dialog>
 
         <!-- 课程简介编辑对话框 -->
         <el-dialog
@@ -717,37 +1044,275 @@
                 <el-button type="primary" @click="saveCourseDescription()">保 存</el-button>
             </span>
         </el-dialog>
-    </el-container>
-</div>
+
+        <!-- 作业发布/编辑对话框 -->
+        <el-dialog
+                :title="assignmentDialogTitle"
+                :visible.sync="assignmentDialogVisible"
+                width="520px">
+            <el-form :model="assignmentForm" label-width="90px">
+                <el-form-item label="标题">
+                    <el-input v-model="assignmentForm.title" placeholder="请输入作业标题"></el-input>
+                </el-form-item>
+                <el-form-item label="说明">
+                    <el-input
+                            type="textarea"
+                            :rows="4"
+                            v-model="assignmentForm.description"
+                            placeholder="支持简单 Markdown 语法，用于描述作业要求"></el-input>
+                </el-form-item>
+	                <el-form-item label="满分">
+	                    <el-input-number
+	                            v-model="assignmentForm.maxScore"
+	                            :min="1"
+	                            :max="1000"
+	                            :step="1"
+	                            style="width: 180px;"></el-input-number>
+	                </el-form-item>
+	                <el-form-item label="截止时间">
+	                    <el-date-picker
+	                            v-model="assignmentForm.deadline"
+	                            type="datetime"
+	                            placeholder="请选择截止时间"
+	                            format="yyyy-MM-dd HH:mm"
+	                            value-format="yyyy-MM-dd'T'HH:mm:ss"
+	                            style="width: 240px;"></el-date-picker>
+	                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="assignmentDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="submitAssignmentForm">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!-- 课程资料上传 / 重命名对话框 -->
+	        <el-dialog
+	                :title="resourceDialogTitle"
+	                :visible.sync="resourceDialogVisible"
+	                width="520px"
+	                @close="resetResourceForm">
+            <el-form :model="resourceForm" label-width="90px">
+                <el-form-item label="名称" required>
+                    <el-input v-model.trim="resourceForm.title" maxlength="200" show-word-limit></el-input>
+                </el-form-item>
+                <el-form-item label="说明" v-if="resourceForm.context !== 'assignment'">
+                    <el-input type="textarea" :rows="3" v-model="resourceForm.description"></el-input>
+                </el-form-item>
+                <div v-else class="sub-title" style="margin:-4px 0 10px 90px;">
+                    作业附件会绑定到当前作业，仅在该作业下显示。
+                </div>
+                <el-form-item label="文件" v-if="resourceForm.mode === 'upload'">
+                    <input type="file" @change="onResourceFileChange">
+                    <div class="sub-title" style="margin-top:6px;">
+                        单文件不超过 50MB；标题为空时默认使用原文件名。
+                    </div>
+                </el-form-item>
+            </el-form>
+	            <span slot="footer" class="dialog-footer">
+	                <el-button @click="resourceDialogVisible = false">取 消</el-button>
+	                <el-button type="primary" :loading="resourceSubmitting" @click="submitResourceForm">确 定</el-button>
+	            </span>
+	        </el-dialog>
+
+	        <!-- 学生详情对话框 -->
+	        <el-dialog
+	                title="学生详情"
+	                :visible.sync="studentDetailDialogVisible"
+	                width="520px">
+	            <div v-if="studentDetail">
+	                <div style="display:flex;align-items:center;margin-bottom:14px;">
+	                    <div style="width:44px;height:44px;border-radius:50%;background:#ecf5ff;color:#409eff;display:flex;align-items:center;justify-content:center;font-weight:700;">
+	                        {{ (studentDetail.realName || studentDetail.studentNo || 'S').toString().slice(0, 1) }}
+	                    </div>
+	                    <div style="margin-left:12px;">
+	                        <div style="font-weight:600;font-size:15px;">
+	                            {{ studentDetail.realName || '-' }}
+	                        </div>
+	                        <div class="sub-title">
+	                            学号：{{ studentDetail.studentNo || '-' }} · 班级：{{ studentDetail.className || '-' }}
+	                        </div>
+	                    </div>
+	                </div>
+	                <el-form label-width="90px" size="small">
+	                    <el-form-item label="邮箱">
+	                        <span>{{ studentDetail.email || '-' }}</span>
+	                    </el-form-item>
+	                    <el-form-item label="手机号">
+	                        <span>{{ studentDetail.phone || '-' }}</span>
+	                    </el-form-item>
+	                    <el-form-item label="专业">
+	                        <span>{{ studentDetail.major || '-' }}</span>
+	                    </el-form-item>
+	                    <el-form-item label="入学年份">
+	                        <span>{{ studentDetail.enrollmentYear || '-' }}</span>
+	                    </el-form-item>
+	                </el-form>
+	            </div>
+	            <div v-else class="sub-title">暂无学生信息。</div>
+	            <span slot="footer" class="dialog-footer">
+	                <el-button @click="studentDetailDialogVisible = false">关 闭</el-button>
+	            </span>
+	        </el-dialog>
+
+	        <!-- 总评计算与发布对话框 -->
+	        <el-dialog
+	                title="课程总评"
+	                :visible.sync="finalGradeDialogVisible"
+	                width="560px">
+	            <el-form :model="finalGradeForm" label-width="120px" size="small">
+	                <el-form-item label="学生">
+	                    <span>{{ finalGradeForm.realName || '-' }}</span>
+	                    <span class="sub-title" style="margin-left:8px;">
+	                        {{ finalGradeForm.studentNo || '-' }} · {{ finalGradeForm.className || '-' }}
+	                    </span>
+	                </el-form-item>
+	                <el-form-item label="作业成绩(50%)">
+	                    <span>
+	                        {{ finalGradeForm.courseworkEarned }} / {{ finalGradeForm.courseworkPossible }}
+	                        <span class="sub-title" style="margin-left:8px;">折算：{{ finalGradeForm.courseworkPart }}</span>
+	                    </span>
+	                </el-form-item>
+	                <el-form-item label="期末考试(0-50)">
+	                    <el-input-number
+	                            v-model="finalGradeForm.finalExamScore"
+	                            :min="0"
+	                            :max="50"
+	                            :step="0.5"
+	                            controls-position="right"
+	                            style="width: 180px;"
+	                            @change="recalcFinalGradeTotal"></el-input-number>
+	                    <span class="sub-title" style="margin-left:8px;">满分 50</span>
+	                </el-form-item>
+	                <el-form-item label="总评(0-100)">
+	                    <span style="font-weight:600;">{{ finalGradeForm.totalScore }}</span>
+	                </el-form-item>
+	            </el-form>
+	            <div v-if="finalGradeSubmitting" class="sub-title" style="margin-left:120px;">
+	                正在计算/发布，请稍候…
+	            </div>
+	            <span slot="footer" class="dialog-footer">
+	                <el-button @click="finalGradeDialogVisible = false">取 消</el-button>
+	                <el-button type="primary" :loading="finalGradeSubmitting" @click="publishFinalGrade">发布总评</el-button>
+	            </span>
+	        </el-dialog>
+	    </el-container>
+	</div>
 
 <script>
+    const teacherMessages = {
+        zh: {
+            app: { brand: 'webdev' },
+            common: { notLoggedIn: '未登录' },
+            teacher: {
+                headerSub: '教师端',
+                notifications: '通知',
+                menuProfile: '个人中心',
+                menuLogout: '退出登录',
+                navDashboard: '总览',
+                navCourses: '我的课程',
+                navAssignments: '作业管理',
+                navNotifications: '通知中心'
+            }
+        },
+        en: {
+            app: { brand: 'webdev' },
+            common: { notLoggedIn: 'Not signed in' },
+            teacher: {
+                headerSub: 'Teacher',
+                notifications: 'Notifications',
+                menuProfile: 'Profile',
+                menuLogout: 'Sign out',
+                navDashboard: 'Overview',
+                navCourses: 'My courses',
+                navAssignments: 'Assignments',
+                navNotifications: 'Notifications'
+            }
+        }
+    };
+
+    const teacherLocale = localStorage.getItem('webdev_locale') || 'zh';
+    const teacherI18n = new VueI18n({
+        locale: teacherLocale,
+        messages: teacherMessages
+    });
+
     // Axios 全局配置：基地址 + 简单错误处理
     axios.defaults.baseURL = '/api';
 
     new Vue({
         el: '#app',
+        i18n: teacherI18n,
         data() {
             return {
+                locale: teacherLocale,
                 activeTab: 'dashboard',
                 currentUser: null,
 
-                // 课程相关
-                courses: [],
-                courseFilter: {
-                    semester: '',
-                    minCredit: null,
-                    maxCredit: null,
-                    minRemain: null,
-                    sortBy: 'time',
-                    sortOrder: 'desc'
+	                // 课程相关
+	                coursesAll: [],
+	                courses: [],
+                // 课程资料
+                resourceCourseId: null,
+                courseResources: [],
+                resourceDialogVisible: false,
+                resourceDialogTitle: '',
+                resourceSubmitting: false,
+                resourceForm: {
+                    mode: 'upload', // upload | rename
+                    context: 'course', // course | assignment
+                    id: null,
+                    courseId: null,
+                    title: '',
+                    description: '',
+                    file: null
                 },
-                selectedCourse: null,
-                selectedCourseSelections: [],
+	                courseFilter: {
+	                    semester: '',
+	                    minCredit: null,
+	                    maxCredit: null,
+	                    minRemain: null,
+	                    sortBy: 'time',
+	                    sortOrder: 'desc'
+	                },
+	                selectedCourse: null,
+	                selectedCourseSelections: [],
+	                studentDetailDialogVisible: false,
+	                studentDetail: null,
+	                finalGradeDialogVisible: false,
+	                finalGradeSubmitting: false,
+	                finalGradeForm: {
+	                    selectionId: null,
+	                    courseId: null,
+	                    studentPkId: null,
+	                    studentNo: '',
+	                    realName: '',
+	                    className: '',
+	                    major: '',
+	                    enrollmentYear: null,
+	                    courseworkEarned: 0,
+	                    courseworkPossible: 0,
+	                    courseworkPart: 0,
+	                    finalExamScore: 0,
+	                    totalScore: 0
+	                },
 
-                // 作业相关
-                assignmentCourseId: null,
+	                // 作业相关
+	                assignmentCourseId: null,
                 assignments: [],
                 currentSubmissions: [],
+                currentAssignment: null,
+                currentAssignmentAverage: null,
+                studentTrendData: [],
+                assignmentDialogVisible: false,
+                assignmentDialogTitle: '',
+                assignmentForm: {
+                    id: null,
+                    courseId: null,
+                    title: '',
+                    description: '',
+                    maxScore: 100,
+                    deadline: ''
+                },
 
                 // 通知
                 notifications: [],
@@ -776,7 +1341,69 @@
                 // 课程简介富文本
                 descriptionDialogVisible: false,
                 descriptionCourse: null,
-                vditor: null
+                vditor: null,
+
+                // 课程发布/编辑表单
+                courseDialogVisible: false,
+                courseDialogTitle: '',
+                courseSubmitting: false,
+                courseForm: {
+                    id: null,
+                    courseCode: '',
+                    courseName: '',
+                    credit: 2,
+                    semester: '',
+                    maxStudents: 50,
+                    currentStudents: 0,
+                    status: 'CLOSED',
+                    description: ''
+                },
+                courseRules: {
+                    courseCode: [
+                        {required: true, message: '请输入课程代码', trigger: 'blur'},
+                        {max: 20, message: '课程代码最长 20 个字符', trigger: 'blur'},
+                        {pattern: /^[A-Za-z0-9][A-Za-z0-9_-]*$/, message: '仅支持字母/数字/下划线/短横线', trigger: 'blur'}
+                    ],
+                    courseName: [
+                        {required: true, message: '请输入课程名称', trigger: 'blur'},
+                        {max: 100, message: '课程名称最长 100 个字符', trigger: 'blur'}
+                    ],
+                    credit: [
+                        {required: true, message: '请输入学分', trigger: 'change'},
+                        {type: 'number', min: 0.5, message: '学分必须大于 0', trigger: 'change'}
+                    ],
+                    semester: [
+                        {required: true, message: '请输入学期（例如 2023-2024-1）', trigger: 'change'},
+                        {
+                            validator: (rule, value, callback) => {
+                                if (!value) return callback();
+                                const m = String(value).match(/^(\d{4})-(\d{4})-([12])$/);
+                                if (!m) return callback(new Error('学期格式必须为 YYYY-YYYY-1/2'));
+                                const start = Number(m[1]);
+                                const end = Number(m[2]);
+                                const term = Number(m[3]);
+                                if (end !== start + 1) return callback(new Error('学期学年必须为连续年份（如 2023-2024）'));
+
+                                const now = new Date();
+                                const cy = now.getFullYear();
+                                const cm = now.getMonth() + 1;
+                                const curEndYear = cm >= 9 ? cy + 1 : cy;
+                                const curTerm = cm >= 9 ? 1 : 2;
+                                const targetKey = end * 10 + term;
+                                const currentKey = curEndYear * 10 + curTerm;
+                                if (targetKey < currentKey) return callback(new Error('不能发布过去学期的课程'));
+                                callback();
+                            },
+                            trigger: 'change'
+                        }
+                    ],
+                    maxStudents: [
+                        {type: 'number', min: 0, message: '容量不能为负数', trigger: 'change'}
+                    ],
+                    status: [
+                        {pattern: /^(OPEN|CLOSED|CANCELLED)$/, message: '状态不合法', trigger: 'change'}
+                    ]
+                }
             };
         },
         filters: {
@@ -787,8 +1414,19 @@
             }
         },
         methods: {
+            switchLocale(lang) {
+                this.locale = lang;
+                this.$i18n.locale = lang;
+                localStorage.setItem('webdev_locale', lang);
+            },
             switchTab(tab) {
                 this.activeTab = tab;
+                if (tab === 'courses' && this.selectedCourse && this.selectedCourse.id) {
+                    this.loadCourseResources(this.selectedCourse.id);
+                }
+                if (tab === 'assignments' && this.assignmentCourseId) {
+                    this.loadCourseResources(this.assignmentCourseId);
+                }
             },
             handleMenuSelect(index) {
                 this.activeTab = index;
@@ -804,13 +1442,14 @@
             // 加载当前用户信息
             loadCurrentUser() {
                 axios.get('/user/me').then(res => {
-                    if (res.data && res.data.code === 1) {
-                        this.currentUser = res.data.data;
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.currentUser = body.data;
                         this.loadProfile();
                         this.loadCourses();
                         this.loadNotifications();
                     } else {
-                        this.$message.error(res.data.msg || '请先登录');
+                        this.$message.error(body.message || '请先登录');
                     }
                 }).catch(() => {
                     this.$message.error('获取当前用户失败');
@@ -820,102 +1459,365 @@
             // 课程列表（只看自己的课程）
             loadCourses() {
                 if (!this.currentUser) return;
-                // 这里假设 course.teacherId == user.id，如有需要可根据你的实际表结构调整
-                axios.get('/course/listByTeacher', {
-                    params: {teacherId: this.currentUser.id}
-                }).then(res => {
-                    if (res.data && res.data.code === 1) {
-                        this.courses = res.data.data || [];
+                // 后端根据当前登录老师自动识别 teacherId，无需前端传参
+                axios.get('/course/listByTeacher').then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.coursesAll = body.data || [];
+                        this.applyCourseFilter();
                         this.dashboardMetrics.assignmentCount = 0; // 简化处理，可后续通过接口统计
+
+                        // 保持右侧选中课程（如果仍存在）
+                        const selectedId = this.selectedCourse && this.selectedCourse.id;
+                        if (selectedId) {
+                            const found = (this.coursesAll || []).find(c => c.id === selectedId);
+                            this.selectedCourse = found || null;
+                            if (this.selectedCourse) {
+                                this.handleCourseRowClick(this.selectedCourse);
+                            } else {
+                                this.selectedCourseSelections = [];
+                                this.resourceCourseId = null;
+                                this.courseResources = [];
+                            }
+                        }
+                    } else if (body.message) {
+                        this.$message.error(body.message);
                     }
                 });
             },
 
-            // 课程搜索（多条件组合筛选）
-            searchCourses() {
-                const req = {
-                    semester: this.courseFilter.semester || null,
-                    minCredit: this.courseFilter.minCredit,
-                    maxCredit: this.courseFilter.maxCredit,
-                    minRemain: this.courseFilter.minRemain,
-                    sortBy: this.courseFilter.sortBy,
-                    sortOrder: this.courseFilter.sortOrder
-                };
-                axios.post('/course/search', req).then(res => {
-                    if (res.data && res.data.code === 1) {
-                        // 注意：search 是全局课程，如果只希望显示当前老师的课程，可在前端再过滤
-                        const all = res.data.data || [];
-                        const teacherId = this.currentUser ? this.currentUser.id : null;
-                        this.courses = teacherId
-                            ? all.filter(c => c.teacherId === teacherId)
-                            : all;
+	            // 课程筛选（仅筛选“我的课程”，避免依赖全局 search 接口）
+	            searchCourses() {
+	                this.applyCourseFilter();
+	            },
+
+	            resetCourseFilter() {
+	                this.courseFilter = {
+	                    semester: '',
+	                    minCredit: null,
+	                    maxCredit: null,
+	                    minRemain: null,
+	                    sortBy: 'time',
+	                    sortOrder: 'desc'
+	                };
+	                this.applyCourseFilter();
+	            },
+
+            applyCourseFilter() {
+                const source = Array.isArray(this.coursesAll) ? this.coursesAll.slice() : [];
+                const semester = (this.courseFilter.semester || '').trim();
+                const minCredit = this.courseFilter.minCredit != null ? Number(this.courseFilter.minCredit) : null;
+                const maxCredit = this.courseFilter.maxCredit != null ? Number(this.courseFilter.maxCredit) : null;
+                const minRemain = this.courseFilter.minRemain != null ? Number(this.courseFilter.minRemain) : null;
+
+                let filtered = source.filter(c => {
+                    if (semester && String(c.semester || '') !== semester) return false;
+                    const credit = c.credit != null ? Number(c.credit) : null;
+                    if (minCredit != null && minCredit > 0) {
+                        if (credit == null) return false;
+                        if (credit < minCredit) return false;
                     }
+                    if (maxCredit != null && maxCredit > 0) {
+                        if (credit == null) return false;
+                        if (credit > maxCredit) return false;
+                    }
+                    if (minRemain != null && minRemain > 0) {
+                        const remain = this.getRemain(c);
+                        if (remain < minRemain) return false;
+                    }
+                    return true;
                 });
+
+	                const sortBy = this.courseFilter.sortBy || 'time';
+	                const sortOrder = this.courseFilter.sortOrder === 'asc' ? 'asc' : 'desc';
+	                const dir = sortOrder === 'asc' ? 1 : -1;
+
+	                const getTimeKey = (c) => {
+	                    if (!c) return 0;
+	                    if (c.createdAt) {
+	                        const t = Date.parse(String(c.createdAt));
+	                        return isNaN(t) ? 0 : t;
+	                    }
+	                    return c.id != null ? Number(c.id) : 0;
+	                };
+
+	                filtered.sort((a, b) => {
+	                    if (sortBy === 'credit') return dir * ((Number(a.credit) || 0) - (Number(b.credit) || 0));
+	                    if (sortBy === 'remain') return dir * (this.getRemain(a) - this.getRemain(b));
+	                    return dir * (getTimeKey(a) - getTimeKey(b));
+	                });
+
+                this.courses = filtered;
             },
 
-            resetCourseFilter() {
-                this.courseFilter = {
-                    semester: '',
-                    minCredit: null,
-                    maxCredit: null,
-                    minRemain: null,
-                    sortBy: 'time',
-                    sortOrder: 'desc'
-                };
-                this.loadCourses();
-            },
+	            // 选中课程 -> 加载选课名单
+	            handleCourseRowClick(row) {
+	                this.selectedCourse = row;
+	                if (!row || !row.id) {
+	                    this.selectedCourseSelections = [];
+	                    this.resourceCourseId = null;
+	                    this.courseResources = [];
+	                    return;
+	                }
+	                axios.get('/courseSelection/listByCourseDetail', {
+	                    params: {courseId: row.id}
+	                }).then(res => {
+	                    const body = res.data || {};
+	                    if (body.success) {
+	                        this.selectedCourseSelections = body.data || [];
+	                    } else {
+	                        this.selectedCourseSelections = [];
+	                        if (body.message) {
+	                            this.$message.error(body.message);
+	                        }
+	                    }
+	                });
 
-            // 选中课程 -> 加载选课名单
-            handleCourseRowClick(row) {
-                this.selectedCourse = row;
-                if (!row || !row.id) {
-                    this.selectedCourseSelections = [];
-                    return;
+	                this.loadCourseResources(row.id);
+	            },
+
+	            openStudentDetail(row) {
+	                if (!row) return;
+	                this.studentDetail = Object.assign({}, row);
+	                this.studentDetailDialogVisible = true;
+	            },
+
+	            recalcFinalGradeTotal() {
+	                const coursework = Number(this.finalGradeForm.courseworkPart) || 0;
+	                let finalExam = Number(this.finalGradeForm.finalExamScore);
+	                if (isNaN(finalExam)) finalExam = 0;
+	                if (finalExam < 0) finalExam = 0;
+	                if (finalExam > 50) finalExam = 50;
+	                this.finalGradeForm.finalExamScore = finalExam;
+	                const total = coursework + finalExam;
+	                this.finalGradeForm.totalScore = Number(Math.max(0, Math.min(100, total)).toFixed(2));
+	            },
+
+	            openFinalGradeDialog(row) {
+	                if (!row || !row.id || !this.selectedCourse || !this.selectedCourse.id) return;
+	                this.finalGradeDialogVisible = true;
+	                this.finalGradeSubmitting = true;
+	                this.finalGradeForm = {
+	                    selectionId: row.id,
+	                    courseId: this.selectedCourse.id,
+	                    studentPkId: row.studentPkId,
+	                    studentNo: row.studentNo || '',
+	                    realName: row.realName || '',
+	                    className: row.className || '',
+	                    major: row.major || '',
+	                    enrollmentYear: row.enrollmentYear || null,
+	                    courseworkEarned: 0,
+	                    courseworkPossible: 0,
+	                    courseworkPart: 0,
+	                    finalExamScore: 0,
+	                    totalScore: 0
+	                };
+
+	                const courseId = this.selectedCourse.id;
+	                const studentId = row.studentPkId;
+
+	                const reqAssignments = axios.get('/assignment/listByCourseAndDeadline', {
+	                    params: {courseId: courseId}
+	                });
+	                const reqTrend = axios.get('/assignmentSubmission/studentTrend', {
+	                    params: {studentId: studentId, courseId: courseId}
+	                });
+
+	                Promise.all([reqAssignments, reqTrend]).then(([aRes, tRes]) => {
+	                    const aBody = aRes.data || {};
+	                    const tBody = tRes.data || {};
+	                    const assignments = aBody.success ? (aBody.data || []) : [];
+	                    const trend = tBody.success ? (tBody.data || []) : [];
+
+	                    const maxMap = {};
+	                    assignments.forEach(a => {
+	                        if (a && a.id != null) {
+	                            const ms = Number(a.maxScore);
+	                            maxMap[a.id] = isNaN(ms) ? 0 : ms;
+	                        }
+	                    });
+
+	                    let earned = 0;
+	                    let possible = 0;
+	                    trend.forEach(item => {
+	                        if (!item || item.assignmentId == null) return;
+	                        const maxScore = Number(maxMap[item.assignmentId]) || 0;
+	                        if (maxScore <= 0) return;
+	                        possible += maxScore;
+	                        const s = item.score == null ? 0 : Number(item.score);
+	                        if (!isNaN(s)) {
+	                            earned += Math.max(0, Math.min(s, maxScore));
+	                        }
+	                    });
+
+	                    const courseworkPart = possible > 0 ? (earned / possible) * 50 : 0;
+	                    this.finalGradeForm.courseworkEarned = Number(earned.toFixed(2));
+	                    this.finalGradeForm.courseworkPossible = Number(possible.toFixed(2));
+	                    this.finalGradeForm.courseworkPart = Number(courseworkPart.toFixed(2));
+	                    this.recalcFinalGradeTotal();
+	                }).catch(() => {
+	                    this.$message.error('计算总评失败：无法获取作业成绩数据');
+	                }).finally(() => {
+	                    this.finalGradeSubmitting = false;
+	                });
+	            },
+
+	            publishFinalGrade() {
+	                const payload = {
+	                    id: this.finalGradeForm.selectionId,
+	                    finalScore: this.finalGradeForm.totalScore,
+	                    status: 'COMPLETED'
+	                };
+	                if (!payload.id) {
+	                    this.$message.error('缺少选课记录ID');
+	                    return;
+	                }
+	                const score = Number(payload.finalScore);
+	                if (isNaN(score)) {
+	                    this.$message.error('总评不是合法的数字');
+	                    return;
+	                }
+	                this.finalGradeSubmitting = true;
+	                axios.post('/courseSelection/publishGrade', payload).then(res => {
+	                    const body = res.data || {};
+	                    if (body.success) {
+	                        this.$message.success('总评发布成功');
+	                        const idx = (this.selectedCourseSelections || []).findIndex(i => i && i.id === payload.id);
+	                        if (idx >= 0) {
+	                            this.$set(this.selectedCourseSelections, idx, Object.assign({}, this.selectedCourseSelections[idx], {
+	                                finalScore: payload.finalScore,
+	                                status: payload.status
+	                            }));
+	                        }
+	                        this.finalGradeDialogVisible = false;
+	                    } else {
+	                        this.$message.error(body.message || '总评发布失败');
+	                    }
+	                }).catch(() => {
+	                    this.$message.error('总评发布失败');
+	                }).finally(() => {
+	                    this.finalGradeSubmitting = false;
+	                });
+	            },
+
+            getSuggestedSemester() {
+                const now = new Date();
+                const y = now.getFullYear();
+                const m = now.getMonth() + 1;
+                if (m >= 9) {
+                    return `${y}-${y + 1}-1`;
                 }
-                axios.get('/courseSelection/listByCourse', {
-                    params: {courseId: row.id}
-                }).then(res => {
-                    if (res.data && res.data.code === 1) {
-                        this.selectedCourseSelections = res.data.data || [];
-                    } else {
-                        this.selectedCourseSelections = [];
-                    }
-                });
+                return `${y - 1}-${y}-2`;
             },
 
-            // 发布/编辑课程（这里简单用 prompt；实际可以做成弹窗表单）
+            getSemesterOptions() {
+                const now = new Date();
+                const y = now.getFullYear();
+                const m = now.getMonth() + 1;
+                const options = [];
+                // 当前学期与未来 4 个学期
+                let startYear = m >= 9 ? y : y - 1;
+                let term = m >= 9 ? 1 : 2;
+                for (let i = 0; i < 5; i++) {
+                    const endYear = startYear + 1;
+                    options.push(`${startYear}-${endYear}-${term}`);
+                    if (term === 1) {
+                        term = 2;
+                    } else {
+                        term = 1;
+                        startYear += 1;
+                    }
+                }
+                return options;
+            },
+
+            resetCourseForm() {
+                this.courseSubmitting = false;
+                if (this.$refs.courseFormRef) {
+                    this.$refs.courseFormRef.clearValidate();
+                }
+            },
+
+            normalizeCoursePayload(form) {
+                const payload = Object.assign({}, form || {});
+                payload.courseCode = (payload.courseCode || '').trim();
+                payload.courseName = (payload.courseName || '').trim();
+                payload.semester = (payload.semester || '').trim();
+
+                if (payload.maxStudents == null || payload.maxStudents === '') {
+                    payload.maxStudents = 50;
+                }
+                if (payload.status == null || payload.status === '') {
+                    delete payload.status;
+                }
+                if (payload.description == null || payload.description === '') {
+                    delete payload.description;
+                }
+                delete payload.currentStudents;
+                delete payload.createdAt;
+                delete payload.teacherId;
+                return payload;
+            },
+
+            // 发布/编辑课程（使用对话框表单，补齐后端必填字段）
             openCourseDialog(course) {
                 const isEdit = !!course;
-                const title = isEdit ? '编辑课程标题（仅示例）' : '新课程标题（仅示例）';
-                this.$prompt(title, '课程', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    inputValue: course ? course.courseName : ''
-                }).then(({value}) => {
-                    if (!value) return;
-                    let payload = Object.assign({}, course || {});
-                    payload.courseName = value;
-                    if (!isEdit) {
-                        payload.teacherId = this.currentUser.id;
-                        axios.post('/course/add', payload).then(res => {
-                            if (res.data && res.data.code === 1) {
-                                this.$message.success('课程创建成功');
-                                this.loadCourses();
-                            } else {
-                                this.$message.error(res.data.msg || '创建课程失败');
-                            }
-                        });
-                    } else {
-                        axios.post('/course/update', payload).then(res => {
-                            if (res.data && res.data.code === 1) {
-                                this.$message.success('课程更新成功');
-                                this.loadCourses();
-                            } else {
-                                this.$message.error(res.data.msg || '更新课程失败');
-                            }
-                        });
+                this.courseDialogTitle = isEdit ? '编辑课程' : '发布课程';
+                if (isEdit) {
+                    this.courseForm = Object.assign({}, this.courseForm, {
+                        id: course.id,
+                        courseCode: course.courseCode || '',
+                        courseName: course.courseName || '',
+                        credit: course.credit != null ? Number(course.credit) : 2,
+                        semester: course.semester || '',
+                        maxStudents: course.maxStudents != null ? Number(course.maxStudents) : 50,
+                        currentStudents: course.currentStudents != null ? Number(course.currentStudents) : 0,
+                        status: course.status || 'CLOSED',
+                        description: course.description || ''
+                    });
+                } else {
+                    this.courseForm = {
+                        id: null,
+                        courseCode: '',
+                        courseName: '',
+                        credit: 2,
+                        semester: this.getSuggestedSemester(),
+                        maxStudents: 50,
+                        currentStudents: 0,
+                        status: 'CLOSED',
+                        description: ''
+                    };
+                }
+                this.courseDialogVisible = true;
+                this.$nextTick(() => {
+                    if (this.$refs.courseFormRef) {
+                        this.$refs.courseFormRef.clearValidate();
                     }
-                }).catch(() => {
+                });
+            },
+
+            submitCourseForm() {
+                if (!this.$refs.courseFormRef) return;
+                this.$refs.courseFormRef.validate(valid => {
+                    if (!valid) return;
+                    this.courseSubmitting = true;
+                    const isEdit = !!this.courseForm.id;
+                    const payload = this.normalizeCoursePayload(this.courseForm);
+                    const url = isEdit ? '/course/update' : '/course/add';
+                    axios.post(url, payload).then(res => {
+                        const body = res.data || {};
+                        if (body.success) {
+                            this.$message.success(isEdit ? '课程更新成功' : '课程创建成功');
+                            this.courseDialogVisible = false;
+                            this.loadCourses();
+                        } else {
+                            this.$message.error(body.message || (isEdit ? '更新课程失败' : '创建课程失败'));
+                        }
+                    }).catch(() => {
+                        this.$message.error(isEdit ? '更新课程失败' : '创建课程失败');
+                    }).finally(() => {
+                        this.courseSubmitting = false;
+                    });
                 });
             },
 
@@ -924,11 +1826,12 @@
                     type: 'warning'
                 }).then(() => {
                     axios.delete('/course/' + course.id).then(res => {
-                        if (res.data && res.data.code === 1) {
+                        const body = res.data || {};
+                        if (body.success) {
                             this.$message.success('删除成功');
                             this.loadCourses();
                         } else {
-                            this.$message.error(res.data.msg || '删除失败');
+                            this.$message.error(body.message || '删除失败');
                         }
                     });
                 }).catch(() => {
@@ -945,6 +1848,45 @@
                             height: 320,
                             placeholder: '在此编辑课程简介（支持 Markdown & 代码高亮）',
                             mode: 'ir',
+	                            upload: {
+	                                accept: 'image/*',
+	                                multiple: true,
+	                                handler: (files) => {
+                                    const courseId = this.descriptionCourse ? this.descriptionCourse.id : null;
+                                    const uploaderId = this.currentUser ? this.currentUser.id : null;
+                                    if (!courseId || !uploaderId) {
+                                        this.$message.error('缺少课程或登录信息，无法上传图片');
+                                        return;
+                                    }
+                                    const list = Array.prototype.slice.call(files || []);
+                                    if (!list.length) return;
+
+	                                    const tasks = list.map(file => {
+	                                        const fd = new FormData();
+	                                        fd.append('courseId', String(courseId));
+	                                        fd.append('uploaderId', String(uploaderId));
+	                                        const safeName = this.getSafeUploadFileName(file, 'image');
+	                                        fd.append('title', safeName);
+	                                        fd.append('description', 'course-description-image');
+	                                        fd.append('file', file, safeName);
+	                                        return axios.post('/courseResource/upload', fd).then(res => {
+	                                            const body = res.data || {};
+	                                            if (!body.success || !body.data || !body.data.id) {
+	                                                throw new Error(body.message || '上传失败');
+	                                            }
+                                            return '/api/courseResource/view/' + body.data.id;
+                                        });
+                                    });
+
+                                    Promise.all(tasks).then(urls => {
+                                        const text = urls.map(u => `![](${u})`).join('\n') + '\n';
+                                        this.vditor.insertValue(text);
+                                        this.$message.success('图片已插入');
+                                    }).catch(err => {
+                                        this.$message.error(err && err.message ? err.message : '上传失败');
+                                    });
+                                }
+                            },
                             cache: {
                                 enable: false
                             }
@@ -959,31 +1901,293 @@
                 const content = this.vditor ? this.vditor.getValue() : '';
                 const payload = Object.assign({}, this.descriptionCourse, {description: content});
                 axios.post('/course/update', payload).then(res => {
-                    if (res.data && res.data.code === 1) {
+                    const body = res.data || {};
+                    if (body.success) {
                         this.$message.success('课程简介已保存');
                         this.descriptionDialogVisible = false;
                         this.loadCourses();
                     } else {
-                        this.$message.error(res.data.msg || '保存失败');
+                        this.$message.error(body.message || '保存失败');
                     }
                 });
+            },
+
+            formatDateTime(value) {
+                if (!value) return '';
+                return String(value).replace('T', ' ').substr(0, 16);
             },
 
             // 作业管理
             loadAssignmentsForCourse(courseId) {
                 if (!courseId) {
                     this.assignments = [];
+                    this.resourceCourseId = null;
+                    this.courseResources = [];
                     return;
                 }
+                this.loadCourseResources(courseId);
                 axios.get('/assignment/listByCourseAndDeadline', {
                     params: {courseId: courseId}
                 }).then(res => {
-                    if (res.data && res.data.code === 1) {
-                        this.assignments = res.data.data || [];
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.assignments = body.data || [];
                     } else {
                         this.assignments = [];
+                        if (body.message) {
+                            this.$message.error(body.message);
+                        }
                     }
                 });
+            },
+
+            // ======================
+            // 课程资料（CourseResource）
+            // ======================
+            loadCourseResources(courseId) {
+                if (!courseId) {
+                    this.resourceCourseId = null;
+                    this.courseResources = [];
+                    return;
+                }
+                this.resourceCourseId = courseId;
+                axios.get('/courseResource/listByCourse', {
+                    params: {courseId: courseId}
+                }).then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.courseResources = body.data || [];
+                    } else {
+                        this.courseResources = [];
+                        if (body.message) {
+                            this.$message.error(body.message);
+                        }
+                    }
+                }).catch(() => {
+                    this.courseResources = [];
+                });
+            },
+
+            openUploadResource(courseId) {
+                if (!courseId) {
+                    this.$message.error('请先选择课程');
+                    return;
+                }
+                if (!this.currentUser || !this.currentUser.id) {
+                    this.$message.error('未登录');
+                    return;
+                }
+                this.resourceDialogTitle = '上传课程资料';
+                this.resourceForm = {
+                    mode: 'upload',
+                    context: 'course',
+                    id: null,
+                    courseId: courseId,
+                    title: '',
+                    description: '',
+                    file: null
+                };
+                this.resourceDialogVisible = true;
+            },
+
+            openRenameResource(resource) {
+                if (!resource || !resource.id) return;
+                const isAssignment = this.getAssignmentIdFromResource(resource) != null;
+                this.resourceDialogTitle = isAssignment ? '重命名作业附件' : '重命名课程资料';
+                this.resourceForm = {
+                    mode: 'rename',
+                    context: isAssignment ? 'assignment' : 'course',
+                    id: resource.id,
+                    courseId: resource.courseId,
+                    title: resource.title || '',
+                    description: resource.description || '',
+                    file: null
+                };
+                this.resourceDialogVisible = true;
+            },
+
+            resetResourceForm() {
+                this.resourceSubmitting = false;
+                this.resourceForm = {
+                    mode: 'upload',
+                    context: 'course',
+                    id: null,
+                    courseId: null,
+                    title: '',
+                    description: '',
+                    file: null
+                };
+            },
+
+            onResourceFileChange(e) {
+                const files = e && e.target ? e.target.files : null;
+                this.resourceForm.file = files && files.length ? files[0] : null;
+            },
+
+            getSafeUploadFileName(file, fallbackBase) {
+                if (!file) return (fallbackBase || 'file') + '.bin';
+                const name = String(file.name || '').trim();
+                if (name && name.includes('.')) return name;
+                const type = String(file.type || '').toLowerCase();
+                const map = {
+                    'image/png': 'png',
+                    'image/jpeg': 'jpg',
+                    'image/jpg': 'jpg',
+                    'image/gif': 'gif',
+                    'image/webp': 'webp',
+                    'image/svg+xml': 'svg',
+                    'application/pdf': 'pdf',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+                    'application/msword': 'doc',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+                    'application/vnd.ms-excel': 'xls',
+                    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+                    'application/vnd.ms-powerpoint': 'ppt'
+                };
+                const ext = map[type] || 'bin';
+                return (fallbackBase || 'file') + '.' + ext;
+            },
+
+            getAssignmentResourceTag(assignmentId) {
+                if (!assignmentId) return null;
+                return `assignment:${assignmentId}`;
+            },
+
+            getAssignmentIdFromResource(resource) {
+                const desc = resource && resource.description ? String(resource.description) : '';
+                const m = desc.match(/^assignment:(\d+)\b/);
+                return m ? Number(m[1]) : null;
+            },
+
+            getResourcesForAssignment(assignmentId) {
+                const tag = this.getAssignmentResourceTag(assignmentId);
+                if (!tag) return [];
+                return (this.courseResources || []).filter(r => String(r.description || '').startsWith(tag));
+            },
+
+            openUploadAssignmentResource() {
+                if (!this.currentAssignment || !this.currentAssignment.id) {
+                    this.$message.error('请先选择作业');
+                    return;
+                }
+                if (!this.assignmentCourseId) {
+                    this.$message.error('请先选择课程');
+                    return;
+                }
+                this.resourceDialogTitle = '上传作业附件';
+                this.resourceForm = {
+                    mode: 'upload',
+                    context: 'assignment',
+                    id: null,
+                    courseId: this.assignmentCourseId,
+                    title: '',
+                    description: this.getAssignmentResourceTag(this.currentAssignment.id),
+                    file: null
+                };
+                this.resourceDialogVisible = true;
+            },
+
+            submitResourceForm() {
+                if (!this.resourceForm.title && this.resourceForm.mode === 'rename') {
+                    this.$message.error('名称不能为空');
+                    return;
+                }
+                if (this.resourceForm.mode === 'upload') {
+                    if (!this.resourceForm.courseId) {
+                        this.$message.error('缺少 courseId');
+                        return;
+                    }
+                    if (!this.resourceForm.file) {
+                        this.$message.error('请选择要上传的文件');
+                        return;
+                    }
+                    this.resourceSubmitting = true;
+                    const fd = new FormData();
+                    fd.append('courseId', String(this.resourceForm.courseId));
+                    fd.append('uploaderId', String(this.currentUser.id));
+                    if (this.resourceForm.title) fd.append('title', this.resourceForm.title);
+                    if (this.resourceForm.description) fd.append('description', this.resourceForm.description);
+                    const safeName = this.getSafeUploadFileName(this.resourceForm.file, 'upload');
+                    fd.append('file', this.resourceForm.file, safeName);
+                    axios.post('/courseResource/upload', fd).then(res => {
+                        const body = res.data || {};
+                        if (body.success) {
+                            this.$message.success('上传成功');
+                            this.resourceDialogVisible = false;
+                            this.loadCourseResources(this.resourceForm.courseId);
+                        } else {
+                            this.$message.error(body.message || '上传失败');
+                        }
+                    }).catch(() => {
+                        this.$message.error('上传失败');
+                    }).finally(() => {
+                        this.resourceSubmitting = false;
+                    });
+                    return;
+                }
+
+                // rename
+                if (!this.resourceForm.id) {
+                    this.$message.error('缺少资源 ID');
+                    return;
+                }
+                this.resourceSubmitting = true;
+                axios.post('/courseResource/updateMeta', {
+                    id: this.resourceForm.id,
+                    title: this.resourceForm.title,
+                    description: this.resourceForm.description
+                }).then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.$message.success('更新成功');
+                        this.resourceDialogVisible = false;
+                        this.loadCourseResources(this.resourceForm.courseId);
+                    } else {
+                        this.$message.error(body.message || '更新失败');
+                    }
+                }).catch(() => {
+                    this.$message.error('更新失败');
+                }).finally(() => {
+                    this.resourceSubmitting = false;
+                });
+            },
+
+            deleteResource(resource) {
+                if (!resource || !resource.id) return;
+                this.$confirm('确定删除该资料吗？文件也会被一并删除。', '提示', {
+                    type: 'warning'
+                }).then(() => {
+                    axios.delete('/courseResource/' + resource.id).then(res => {
+                        const body = res.data || {};
+                        if (body.success) {
+                            this.$message.success('删除成功');
+                            this.loadCourseResources(resource.courseId);
+                        } else {
+                            this.$message.error(body.message || '删除失败');
+                        }
+                    });
+                }).catch(() => {
+                });
+            },
+
+            downloadResource(resource) {
+                if (!resource || !resource.id) return;
+                // 用浏览器下载（携带 session cookie）
+                window.open('/api/courseResource/download/' + resource.id, '_blank');
+            },
+
+            downloadSubmissionAttachment(submission) {
+                if (!submission || !submission.id) return;
+                window.open('/api/assignmentSubmission/downloadAttachment/' + submission.id, '_blank');
+            },
+
+            formatFileSize(bytes) {
+                const n = bytes != null ? Number(bytes) : 0;
+                if (!n) return '-';
+                if (n < 1024) return n + ' B';
+                if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+                if (n < 1024 * 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + ' MB';
+                return (n / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
             },
 
             handleAssignmentRowClick(row) {
@@ -991,37 +2195,60 @@
             },
 
             openAssignmentDialog(assignment) {
+                if (!this.assignmentCourseId) {
+                    this.$message.error('请先选择课程');
+                    return;
+                }
                 const isEdit = !!assignment;
-                const title = isEdit ? '编辑作业标题（仅示例）' : '新作业标题（仅示例）';
-                this.$prompt(title, '作业', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    inputValue: assignment ? assignment.title : ''
-                }).then(({value}) => {
-                    if (!value) return;
-                    let payload = Object.assign({}, assignment || {});
-                    payload.title = value;
-                    payload.courseId = this.assignmentCourseId;
-                    if (!isEdit) {
-                        axios.post('/assignment/add', payload).then(res => {
-                            if (res.data && res.data.code === 1) {
-                                this.$message.success('作业创建成功');
-                                this.loadAssignmentsForCourse(this.assignmentCourseId);
-                            } else {
-                                this.$message.error(res.data.msg || '创建作业失败');
-                            }
-                        });
+                this.assignmentDialogTitle = isEdit ? '编辑作业' : '发布作业';
+                this.assignmentForm = {
+                    id: isEdit ? assignment.id : null,
+                    courseId: this.assignmentCourseId,
+                    title: isEdit ? assignment.title : '',
+                    description: isEdit ? (assignment.description || '') : '',
+                    maxScore: isEdit && assignment.maxScore != null ? assignment.maxScore : 100,
+                    deadline: isEdit && assignment.deadline ? this.normalizeDeadline(assignment.deadline) : ''
+                };
+                this.assignmentDialogVisible = true;
+            },
+
+            normalizeDeadline(value) {
+                if (!value) return '';
+                const s = String(value);
+                if (s.includes('T')) {
+                    return s;
+                }
+                return s.replace(' ', 'T');
+            },
+
+            submitAssignmentForm() {
+                if (!this.assignmentForm.title) {
+                    this.$message.error('作业标题不能为空');
+                    return;
+                }
+                if (!this.assignmentForm.maxScore || this.assignmentForm.maxScore <= 0) {
+                    this.$message.error('作业满分必须为正数');
+                    return;
+                }
+                if (!this.assignmentForm.deadline) {
+                    this.$message.error('截止时间不能为空');
+                    return;
+                }
+
+                const payload = Object.assign({}, this.assignmentForm);
+                const isEdit = !!payload.id;
+                const url = isEdit ? '/assignment/update' : '/assignment/add';
+                axios.post(url, payload).then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.$message.success(isEdit ? '作业更新成功' : '作业创建成功');
+                        this.assignmentDialogVisible = false;
+                        this.loadAssignmentsForCourse(this.assignmentCourseId);
                     } else {
-                        axios.post('/assignment/update', payload).then(res => {
-                            if (res.data && res.data.code === 1) {
-                                this.$message.success('作业更新成功');
-                                this.loadAssignmentsForCourse(this.assignmentCourseId);
-                            } else {
-                                this.$message.error(res.data.msg || '更新作业失败');
-                            }
-                        });
+                        this.$message.error(body.message || (isEdit ? '更新作业失败' : '创建作业失败'));
                     }
                 }).catch(() => {
+                    this.$message.error(isEdit ? '更新作业失败' : '创建作业失败');
                 });
             },
 
@@ -1030,11 +2257,12 @@
                     type: 'warning'
                 }).then(() => {
                     axios.delete('/assignment/' + assignment.id).then(res => {
-                        if (res.data && res.data.code === 1) {
+                        const body = res.data || {};
+                        if (body.success) {
                             this.$message.success('删除成功');
                             this.loadAssignmentsForCourse(this.assignmentCourseId);
                         } else {
-                            this.$message.error(res.data.msg || '删除失败');
+                            this.$message.error(body.message || '删除失败');
                         }
                     });
                 }).catch(() => {
@@ -1042,25 +2270,204 @@
             },
 
             // 加载某项作业的提交与成绩
-            loadSubmissions(assignment) {
-                if (!assignment || !assignment.id) return;
-                axios.get('/assignmentSubmission/listByAssignment', {
+	            loadSubmissions(assignment) {
+	                if (!assignment || !assignment.id) return;
+	                this.currentAssignment = assignment;
+	                axios.get('/assignmentSubmission/listByAssignmentDetail', {
+	                    params: {assignmentId: assignment.id}
+	                }).then(res => {
+	                    const body = res.data || {};
+	                    if (body.success) {
+	                        const list = body.data || [];
+	                        // 按分数从高到低排序，未打分的排在最后
+	                        this.currentSubmissions = list.slice().sort((a, b) => {
+	                            const sa = a.score == null ? -Infinity : a.score;
+	                            const sb = b.score == null ? -Infinity : b.score;
+	                            return sb - sa;
+	                        });
+	                    } else {
+	                        this.currentSubmissions = [];
+	                        if (body.message) {
+	                            this.$message.error(body.message);
+	                        }
+	                    }
+	                });
+
+                // 同时获取该作业的平均分
+                axios.get('/assignmentSubmission/averageScore', {
                     params: {assignmentId: assignment.id}
                 }).then(res => {
-                    if (res.data && res.data.code === 1) {
-                        this.currentSubmissions = res.data.data || [];
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.currentAssignmentAverage = body.data;
                     } else {
-                        this.currentSubmissions = [];
+                        this.currentAssignmentAverage = null;
+                        if (body.message) {
+                            this.$message.error(body.message);
+                        }
                     }
+                });
+            },
+
+            // 查看某个学生在当前课程下的成绩趋势
+            openStudentTrend(row) {
+                if (!row || !row.studentId) {
+                    this.$message.error('缺少学生信息');
+                    return;
+                }
+                if (!this.assignmentCourseId) {
+                    this.$message.error('请先选择课程');
+                    return;
+                }
+                axios.get('/assignmentSubmission/studentTrend', {
+                    params: {
+                        studentId: row.studentId,
+                        courseId: this.assignmentCourseId
+                    }
+                }).then(res => {
+                    const body = res.data || {};
+                    if (!body.success) {
+                        this.$message.error(body.message || '获取成绩趋势失败');
+                        return;
+                    }
+                    const list = body.data || [];
+                    this.studentTrendData = list;
+                    this.$nextTick(() => {
+                        this.renderStudentTrendChart(row);
+                    });
+                }).catch(() => {
+                    this.$message.error('获取成绩趋势失败');
+                });
+            },
+
+	            renderStudentTrendChart(row) {
+	                const dom = document.getElementById('assignment-score-trend');
+	                if (!dom || !window.echarts) {
+	                    return;
+	                }
+	                const graded = (this.studentTrendData || []).filter(i => i.score != null);
+	                if (!graded.length) {
+	                    dom.innerHTML = '该学生在本课程中暂时没有已打分的作业。';
+	                    return;
+	                }
+	                const xData = graded.map(i => i.assignmentTitle || this.formatDateTime(i.deadline));
+	                const yData = graded.map(i => i.score);
+	                const sum = yData.reduce((a, b) => a + b, 0);
+	                const avg = sum / yData.length;
+	                const studentLabel = row
+	                    ? (row.studentNo || row.realName || row.studentId || '')
+	                    : '';
+
+	                const chart = echarts.init(dom);
+	                chart.setOption({
+	                    tooltip: {trigger: 'axis'},
+	                    title: {
+	                        text: '学生成绩趋势',
+	                        subtext: `学生: ${studentLabel} · 平均分: ${avg.toFixed(1)}`,
+	                        left: 'center',
+	                        textStyle: {fontSize: 12},
+	                        subtextStyle: {fontSize: 11}
+	                    },
+                    grid: {left: 40, right: 20, top: 50, bottom: 40},
+                    xAxis: {
+                        type: 'category',
+                        data: xData,
+                        axisLabel: {interval: 0, rotate: 30}
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: '分数'
+                    },
+                    series: [{
+                        type: 'line',
+                        data: yData,
+                        smooth: true,
+                        itemStyle: {color: '#409eff'},
+                        markLine: {
+                            data: [{
+                                yAxis: avg,
+                                name: '平均分'
+                            }]
+                        }
+                    }]
+                });
+            },
+
+	            // 教师为作业提交打分
+	            gradeSubmission(row) {
+	                if (!row || !row.id) return;
+	                const oldScore = row.score;
+	                const maxScore = this.currentAssignment && this.currentAssignment.maxScore != null
+	                    ? Number(this.currentAssignment.maxScore)
+	                    : null;
+	                this.$prompt('请输入分数（0 ~ 作业满分）', '作业打分', {
+	                    confirmButtonText: '确定',
+	                    cancelButtonText: '取消',
+	                    inputValue: oldScore != null ? oldScore : '',
+	                    inputPattern: /^\s*\d+(\.\d+)?\s*$/,
+	                    inputErrorMessage: '请输入合法的数字',
+	                    inputValidator: (value) => {
+	                        const v = String(value == null ? '' : value).trim();
+	                        const score = parseFloat(v);
+	                        if (isNaN(score)) return '请输入合法的数字';
+	                        if (score < 0) return '分数不能为负';
+	                        if (maxScore != null && !isNaN(maxScore) && score > maxScore) {
+	                            return `分数不能超过满分 ${maxScore}`;
+	                        }
+	                        return true;
+	                    }
+	                }).then(({value}) => {
+	                    const score = parseFloat(String(value).trim());
+	                    if (isNaN(score)) {
+	                        this.$message.error('分数格式不正确');
+	                        return;
+	                    }
+                    // 简单再询问评语
+                    this.$prompt('可填写评语（可留空）', '评语', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '跳过',
+                        inputValue: row.feedback || ''
+                    }).then(({value: feedback}) => {
+                        this.doGradeSubmission(row, score, feedback);
+                    }).catch(() => {
+                        this.doGradeSubmission(row, score, null);
+                    });
+                }).catch(() => {
+                });
+            },
+
+            doGradeSubmission(row, score, feedback) {
+                axios.post('/assignmentSubmission/grade', null, {
+                    params: {
+                        id: row.id,
+                        score: score,
+                        feedback: feedback,
+                        status: 'GRADED'
+                    }
+                }).then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.$message.success('打分成功');
+                        if (this.currentAssignment) {
+                            this.loadSubmissions(this.currentAssignment);
+                        }
+                    } else {
+                        this.$message.error(body.message || '打分失败');
+                    }
+                }).catch(() => {
+                    this.$message.error('打分请求失败');
                 });
             },
 
             // 通知
             loadNotifications() {
                 axios.get('/notification/listAll').then(res => {
-                    if (res.data && res.data.code === 1) {
-                        this.notifications = res.data.data || [];
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.notifications = body.data || [];
                         this.unreadNotificationCount = this.notifications.length;
+                    } else if (body.message) {
+                        this.$message.error(body.message);
                     }
                 });
             },
@@ -1081,16 +2488,24 @@
                         this.wsStatus = '已连接';
                     };
                     this.ws.onmessage = (event) => {
-                        // 约定后端推送 JSON：{ type: 'ENROLL'|'DROP'|'GRADE', message: '...', time: '...' }
+                        // 约定后端推送 JSON：{ type: 'ENROLL'|'DROP'|'GRADE'|'SYSTEM', message: '...', time: '...' }
                         try {
                             const msg = JSON.parse(event.data);
+                            let title = '新通知';
+                            if (msg.type === 'ENROLL') {
+                                title = '选课成功';
+                            } else if (msg.type === 'DROP') {
+                                title = '退课成功';
+                            } else if (msg.type === 'GRADE') {
+                                title = '成绩发布';
+                            }
                             this.$notify({
-                                title: '新通知',
+                                title: title,
                                 message: msg.message || '有新的选课/成绩变动',
                                 type: 'info'
                             });
                             this.unreadNotificationCount += 1;
-                            // 可根据需要刷新通知列表
+                            // 收到实时消息后刷新通知列表，保持列表和红点同步
                             this.loadNotifications();
                         } catch (e) {
                             console.log('WS message:', event.data);
@@ -1134,11 +2549,12 @@
                     office: this.profileForm.office
                 };
                 axios.post('/teacher/updateProfile', req).then(res => {
-                    if (res.data && res.data.code === 1) {
+                    const body = res.data || {};
+                    if (body.success) {
                         this.$message.success('个人资料已更新');
                         this.loadCurrentUser();
                     } else {
-                        this.$message.error(res.data.msg || '更新失败');
+                        this.$message.error(body.message || '更新失败');
                     }
                 });
             },

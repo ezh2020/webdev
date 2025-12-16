@@ -1,149 +1,387 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <title>用户登录页面</title>
-    <!-- 引入ElementUI样式 -->
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-    <!-- 引入Vue和ElementUI -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-    <!-- 引入 axios，用于调用后端接口 -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        }
-        .login-container {
-            width: 400px;
-            padding: 40px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        }
-        .login-title {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .login-button {
-            width: 100%;
-            margin-top: 20px;
-            height: 45px;
-            font-size: 16px;
-        }
-        .register-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-        }
-        .register-link a {
-            color: #409EFF;
-            text-decoration: none;
-        }
-        .register-link a:hover {
-            text-decoration: underline;
-        }
-        .form-item {
-            margin-bottom: 20px;
-        }
-        .remember-me {
-            margin-top: -10px;
-            margin-bottom: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>webdev</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://unpkg.com/vue-i18n@8/dist/vue-i18n.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <style>
+    :root{
+      --brand:#7d1b1b;
+      --brand-dark:#651616;
+      --bg:#f2f2f2;
+      --subbar:#e6e6e6;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --link:#2f6f9f;
+      --border:#d0d0d0;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    }
+
+    /* 顶部主条（仿 会议系统 的深红顶栏，但不出现 会议系统 字样） */
+    .topbar{
+      height:56px;
+      background:linear-gradient(0deg,var(--brand),var(--brand-dark));
+      color:#fff;
+      display:flex;
+      align-items:center;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .topbar-inner{
+      width:min(1100px, calc(100% - 40px));
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .brand{
+      font-weight:700;
+      letter-spacing:.2px;
+      font-size:22px;
+      user-select:none;
+    }
+
+    /* 灰色二级条（保留风格一致性） */
+    .subbar{
+      background:var(--subbar);
+      border-bottom:1px solid var(--border);
+      height:44px;
+      display:flex;
+      align-items:center;
+    }
+    .subbar-inner{
+      width:min(1100px, calc(100% - 40px));
+      margin:0 auto;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* 页面内容（无卡片、无阴影，与背景融为一体） */
+    .page{
+      width:min(1100px, calc(100% - 40px));
+      margin:0 auto;
+      padding:30px 0 56px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 0.9fr;
+      gap:60px;
+      align-items:start;
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; gap:26px; }
+    }
+
+    .h1{
+      margin:0;
+      font-size:56px;
+      line-height:1.05;
+      font-weight:700;
+      letter-spacing:-.5px;
+    }
+    .h2{
+      margin:0;
+      font-size:56px;
+      line-height:1.05;
+      font-weight:700;
+      letter-spacing:-.5px;
+    }
+    .hint{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+      max-width:520px;
+    }
+
+    .form-wrap{ margin-top:18px; max-width:520px; }
+    .actions{
+      margin-top:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    a.link{
+      color:var(--link);
+      text-decoration:none;
+      font-size:14px;
+    }
+    a.link:hover{ text-decoration:underline; }
+
+    .primary-action{ margin-top:10px; }
+
+    /* Element UI：去阴影、偏 会议系统 的克制感 */
+    .el-message, .el-notification{ box-shadow:none !important; border:1px solid var(--border); }
+    .el-dropdown-menu{ box-shadow:none !important; border:1px solid var(--border); }
+
+    .el-form-item{ margin-bottom:16px; }
+    .el-input__inner{
+      height:42px;
+      border-radius:0;
+      border-color:#cfcfcf;
+      background:#fff;
+    }
+    .el-input__inner:focus{
+      border-color:var(--link);
+      box-shadow:0 0 0 2px rgba(47,111,159,.12);
+    }
+    .el-checkbox__inner{ border-radius:2px; }
+
+    .el-button{
+      border-radius:0;
+      font-weight:600;
+    }
+    .el-button--primary{
+      background:#607d8b;
+      border-color:#607d8b;
+    }
+    .el-button--primary:hover,
+    .el-button--primary:focus{
+      background:#556f7c;
+      border-color:#556f7c;
+    }
+    .el-button--text{
+      color:var(--link);
+    }
+  </style>
 </head>
 
 <body>
-<div id="app">
-    <div class="login-container">
-        <div class="login-title">用户登录</div>
-        <el-form :model="loginForm" :rules="loginRules" ref="loginForm" label-width="0">
-            <!-- 用户名输入框 -->
-            <el-form-item prop="username" class="form-item">
-                <el-input
-                        v-model="loginForm.username"
-                        placeholder="请输入用户名"
-                        prefix-icon="el-icon-user"
-                        size="medium">
-                </el-input>
-            </el-form-item>
-            <!-- 密码输入框 -->
-            <el-form-item prop="password" class="form-item">
-                <el-input
-                        v-model="loginForm.password"
-                        type="password"
-                        placeholder="请输入密码"
-                        prefix-icon="el-icon-lock"
-                        size="medium"
-                        @keyup.enter.native="handleLogin">
-                </el-input>
-            </el-form-item>
-            <!-- 记住我选项 -->
-            <el-form-item class="remember-me">
-                <el-checkbox v-model="loginForm.remember">记住密码</el-checkbox>
-            </el-form-item>
-            <!-- 登录按钮 -->
-            <el-form-item>
-                <el-button
-                        type="primary"
-                        class="login-button"
-                        :loading="loading"
-                        @click="handleLogin">
-                    {{ loading ? '登录中...' : '登录' }}
-                </el-button>
-            </el-form-item>
-        </el-form>
-        <div class="register-link">
-            还没有账号？<a href="#" @click="showRegister">立即注册</a>
+  <div id="app">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">{{ $t('app.brand') }}</div>
+        <div>
+          <el-select v-model="locale"
+                     size="mini"
+                     @change="switchLocale"
+                     style="width: 110px;">
+            <el-option label="中文" value="zh"></el-option>
+            <el-option label="English" value="en"></el-option>
+          </el-select>
         </div>
-        <div style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
-            <a href="#" style="color: #409EFF; text-decoration: none; font-size: 14px;">忘记密码？</a>
-        </div>
+      </div>
     </div>
-</div>
+    <div class="subbar">
+      <div class="subbar-inner">{{ $t('login.subbar') }}</div>
+    </div>
+
+    <main class="page">
+      <div class="grid">
+        <!-- 左：登录 -->
+        <section>
+          <div class="h1">{{ $t('login.title') }}</div>
+          <div class="hint">{{ $t('login.subtitle') }}</div>
+
+          <div class="form-wrap">
+            <el-form :model="loginForm" :rules="loginRules" ref="loginForm" label-width="0">
+              <el-form-item prop="username">
+                <el-input
+                  v-model="loginForm.username"
+                  :placeholder="$t('login.usernamePlaceholder')"
+                  prefix-icon="el-icon-user"
+                  size="medium">
+                </el-input>
+              </el-form-item>
+
+                <el-form-item prop="password">
+                <el-input
+                  v-model="loginForm.password"
+                  type="password"
+                  :placeholder="$t('login.passwordPlaceholder')"
+                  prefix-icon="el-icon-lock"
+                  size="medium"
+                  @keyup.enter.native="handleLogin">
+                </el-input>
+              </el-form-item>
+
+              <el-form-item style="margin-bottom:10px;">
+                <el-checkbox v-model="loginForm.remember">{{ $t('login.remember') }}</el-checkbox>
+              </el-form-item>
+
+              <el-form-item class="primary-action">
+                <el-button
+                  type="primary"
+                  style="width: 220px; height: 42px;"
+                  :loading="loading"
+                  @click="handleLogin">
+                  {{ loading ? $t('login.loggingIn') : $t('login.login') }}
+                </el-button>
+              </el-form-item>
+            </el-form>
+
+            <div class="actions">
+              <div>
+                <a href="#" class="link">{{ $t('login.forgotPassword') }}</a>
+              </div>
+              <div>
+                {{ $t('login.noAccount') }}
+                <a href="#" class="link" @click="showRegister">{{ $t('login.registerNow') }}</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 右：新用户 -->
+        <aside>
+          <div class="h2">{{ $t('login.newUserTitle') }}</div>
+          <div class="hint">{{ $t('login.newUserDesc') }}</div>
+          <div style="margin-top:16px;">
+            <el-button type="primary" style="width: 220px; height: 42px;" @click="showRegister">
+              注册
+            </el-button>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
 
 <script>
+    const messages = {
+        zh: {
+            app: {
+                brand: 'webdev'
+            },
+            login: {
+                subbar: '账号 · 登录',
+                title: '登录',
+                subtitle: '使用你的 webdev 账号登录，访问课程、作业与通知。',
+                usernamePlaceholder: '邮箱或用户名',
+                passwordPlaceholder: '密码',
+                remember: '记住密码',
+                login: '登录',
+                loggingIn: '登录中...',
+                forgotPassword: '忘记密码？',
+                noAccount: '还没有账号？',
+                registerNow: '立即注册',
+                newUserTitle: '新用户？',
+                newUserDesc: '注册一个 webdev 账号，用于创建或加入课程。',
+                msgFormIncomplete: '请完善表单信息',
+                msgLoginFailed: '登录失败',
+                msgWelcome: '欢迎回来，{username}！',
+                msgServerError: '服务器异常，请稍后重试',
+                validation: {
+                    usernameRequired: '请输入用户名',
+                    usernameLength: '用户名长度在 3 到 12 个字符',
+                    passwordRequired: '请输入密码',
+                    passwordLength: '密码长度在 6 到 16 个字符'
+                }
+            }
+        },
+        en: {
+            app: {
+                brand: 'webdev'
+            },
+            login: {
+                subbar: 'Account · Sign in',
+                title: 'Sign in',
+                subtitle: 'Sign in with your webdev account to access courses, assignments, and notifications.',
+                usernamePlaceholder: 'Email or username',
+                passwordPlaceholder: 'Password',
+                remember: 'Remember me',
+                login: 'Sign in',
+                loggingIn: 'Signing in...',
+                forgotPassword: 'Forgot password?',
+                noAccount: "Don't have an account yet?",
+                registerNow: 'Create one now',
+                newUserTitle: 'New to webdev?',
+                newUserDesc: 'Create a webdev account to create or join courses.',
+                msgFormIncomplete: 'Please complete the form',
+                msgLoginFailed: 'Sign-in failed',
+                msgWelcome: 'Welcome back, {username}!',
+                msgServerError: 'Server error, please try again later',
+                validation: {
+                    usernameRequired: 'Please enter username',
+                    usernameLength: 'Username length must be 3 to 12 characters',
+                    passwordRequired: 'Please enter password',
+                    passwordLength: 'Password length must be 6 to 16 characters'
+                }
+            }
+        }
+    };
+
+    const savedLocale = localStorage.getItem('webdev_locale') || 'zh';
+    const i18n = new VueI18n({
+        locale: savedLocale,
+        messages: messages
+    });
+
     new Vue({
         el: '#app',
+        i18n,
         data() {
             return {
+                locale: savedLocale,
                 // 登录表单数据
                 loginForm: {
                     username: '',
                     password: '',
                     remember: false
                 },
-                // 表单验证规则
-                loginRules: {
-                    username: [
-                        { required: true, message: '请输入用户名', trigger: 'blur' },
-                        { min: 3, max: 12, message: '用户名长度在 3 到 12 个字符', trigger: 'blur' }
-                    ],
-                    password: [
-                        { required: true, message: '请输入密码', trigger: 'blur' },
-                        { min: 6, max: 16, message: '密码长度在 6 到 16 个字符', trigger: 'blur' }
-                    ]
-                },
                 // 加载状态
                 loading: false
             }
         },
+        computed: {
+            loginRules() {
+                // 使用 $t 确保校验消息跟随语言切换
+                return {
+                    username: [
+                        {
+                            validator: (rule, value, callback) => {
+                                if (!value) {
+                                    callback(new Error(this.$t('login.validation.usernameRequired')));
+                                } else if (value.length < 3 || value.length > 12) {
+                                    callback(new Error(this.$t('login.validation.usernameLength')));
+                                } else {
+                                    callback();
+                                }
+                            },
+                            trigger: 'blur'
+                        }
+                    ],
+                    password: [
+                        {
+                            validator: (rule, value, callback) => {
+                                if (!value) {
+                                    callback(new Error(this.$t('login.validation.passwordRequired')));
+                                } else if (value.length < 6 || value.length > 16) {
+                                    callback(new Error(this.$t('login.validation.passwordLength')));
+                                } else {
+                                    callback();
+                                }
+                            },
+                            trigger: 'blur'
+                        }
+                    ]
+                };
+            }
+        },
         methods: {
+            switchLocale(lang) {
+                this.locale = lang;
+                this.$i18n.locale = lang;
+                localStorage.setItem('webdev_locale', lang);
+            },
             // 处理登录
             handleLogin() {
                 this.$refs.loginForm.validate((valid) => {
                     if (!valid) {
-                        this.$message.error('请完善表单信息');
+                        this.$message.error(this.$t('login.msgFormIncomplete'));
                         return;
                     }
 
@@ -156,13 +394,13 @@
                         this.loading = false;
                         const data = res.data;
                         if (!data.success) {
-                            this.$message.error(data.message || '登录失败');
+                            this.$message.error(data.message || this.$t('login.msgLoginFailed'));
                             return;
                         }
 
                         const user = data.data;
                         this.$message({
-                            message: `欢迎回来，${user.username}！`,
+                            message: this.$t('login.msgWelcome', {username: user.username}),
                             type: 'success',
                             duration: 1500
                         });
@@ -180,7 +418,7 @@
                     }).catch(err => {
                         this.loading = false;
                         console.error(err);
-                        this.$message.error('服务器异常，请稍后重试');
+                        this.$message.error(this.$t('login.msgServerError'));
                     });
                 });
             },

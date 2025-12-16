@@ -17,6 +17,9 @@ import com.webdev.webdev.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Locale;
+
 @Service
 public class CourseSelectionServiceImpl extends ServiceImpl<CourseSelectionMapper, CourseSelection> implements CourseSelectionService {
 
@@ -63,6 +66,11 @@ public class CourseSelectionServiceImpl extends ServiceImpl<CourseSelectionMappe
             return "课程人数已满，无法选课";
         }
 
+        if (selection.getSelectedAt() == null) {
+            selection.setSelectedAt(LocalDateTime.now());
+        }
+        selection.setStatus(normalizeStatus(selection.getStatus()));
+
         boolean ok = this.save(selection);
         if (!ok) {
             return "保存选课记录失败";
@@ -98,7 +106,8 @@ public class CourseSelectionServiceImpl extends ServiceImpl<CourseSelectionMappe
                     teacher != null ? teacher.getUserId() : null,
                     title,
                     content,
-                    Boolean.FALSE
+                    Boolean.FALSE,
+                    "ENROLL"
             );
         } catch (Exception ignored) {
         }
@@ -151,7 +160,8 @@ public class CourseSelectionServiceImpl extends ServiceImpl<CourseSelectionMappe
                         teacher != null ? teacher.getUserId() : null,
                         title,
                         content,
-                        Boolean.FALSE
+                        Boolean.FALSE,
+                        "DROP"
                 );
             }
         } catch (Exception ignored) {
@@ -176,7 +186,7 @@ public class CourseSelectionServiceImpl extends ServiceImpl<CourseSelectionMappe
 
         dbSelection.setFinalScore(selection.getFinalScore());
         if (selection.getStatus() != null) {
-            dbSelection.setStatus(selection.getStatus());
+            dbSelection.setStatus(normalizeStatus(selection.getStatus()));
         }
 
         boolean ok = this.updateById(dbSelection);
@@ -216,12 +226,33 @@ public class CourseSelectionServiceImpl extends ServiceImpl<CourseSelectionMappe
                     teacher != null ? teacher.getUserId() : null,
                     title,
                     content,
-                    Boolean.TRUE
+                    Boolean.TRUE,
+                    "GRADE"
             );
         } catch (Exception ignored) {
         }
 
         return null;
+    }
+
+    private String normalizeStatus(String rawStatus) {
+        if (rawStatus == null || rawStatus.trim().isEmpty()) {
+            return "SELECTED";
+        }
+        String s = rawStatus.trim().toUpperCase(Locale.ROOT);
+        if ("SELECTED".equals(s) || "WITHDRAWN".equals(s) || "COMPLETED".equals(s)) {
+            return s;
+        }
+        if ("ENROLLED".equals(s) || "ENROLL".equals(s)) {
+            return "SELECTED";
+        }
+        if ("DROPPED".equals(s) || "DROP".equals(s) || "WITHDRAW".equals(s)) {
+            return "WITHDRAWN";
+        }
+        if ("FINISHED".equals(s) || "DONE".equals(s)) {
+            return "COMPLETED";
+        }
+        return "SELECTED";
     }
 
     /**

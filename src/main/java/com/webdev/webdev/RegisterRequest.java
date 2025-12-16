@@ -14,6 +14,11 @@ public class RegisterRequest {
     private String username;
 
     /**
+     * 真实姓名，注册时必填，用于填充 users.real_name 字段。
+     */
+    private String realName;
+
+    /**
      * 登录密码（明文），后端会进行加密存储。
      */
     private String password;
@@ -26,4 +31,3 @@ public class RegisterRequest {
     private String email;
     private String phone;
 }
-
