@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>webdev - 管理员端</title>
+
+    <!-- UI 依赖，与 teacher/student 保持一致 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-i18n@8/dist/vue-i18n.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!-- ECharts 用于可视化 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+
+    
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+	        body{
+	            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,
+	            "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+	            background:#f2f2f2;
+	            color:#202124;
+	        }
+	        #app{min-height:100vh;}
+
+	        .el-header{
+	            background: linear-gradient(0deg, #7d1b1b, #651616);
+	            color: #ffffff;
+	            border-bottom:1px solid rgba(255,255,255,0.10);
+	            display:flex;
+	            align-items:center;
+	            justify-content:space-between;
+	            padding:0 24px;
+	            box-shadow:none!important;
+	        }
+	        .brand {
+	            display: flex;
+	            align-items: center;
+	        }
+	        .brand-logo {
+	            display: none;
+	        }
+	        .brand-title {
+	            font-size: 20px;
+	            font-weight: 700;
+	            letter-spacing:.2px;
+	            color: #ffffff;
+	        }
+	        .brand-sub {
+	            font-size: 12px;
+	            color: rgba(255,255,255,0.78);
+	            margin-top: 2px;
+	        }
+
+	        .top-right {
+	            display: flex;
+	            align-items: center;
+	        }
+	        .top-right,
+	        .top-right i{
+	            color:#ffffff!important;
+	        }
+	        .top-right .el-button--text{
+	            color:#ffffff!important;
+	        }
+	        .top-right .el-button--text:hover{
+	            color:rgba(255,255,255,0.88)!important;
+	        }
+
+	        .subbar{
+	            height: 44px;
+	            background:#e6e6e6;
+	            border-bottom:1px solid #d0d0d0;
+	            padding:0 12px;
+	            display:flex;
+	            align-items:center;
+	        }
+        .top-menu{
+            background:transparent!important;
+            border-bottom:none!important;
+        }
+	        .top-menu.el-menu--horizontal>.el-menu-item{
+	            height:44px;line-height:44px;
+	            border-bottom:2px solid transparent;
+	            padding:0 14px;
+	            font-weight:600;
+	        }
+	        .top-menu.el-menu--horizontal>.el-menu-item.is-active{
+	            border-bottom-color:#2f6f9f;
+	            background:transparent!important;
+	        }
+        .top-menu.el-menu--horizontal>.el-menu-item:hover{
+            background:rgba(0,0,0,.03)!important;
+        }
+
+        .webdev-main{padding:18px 18px 28px;}
+        .page-header{margin:8px 0 12px;}
+        .page-title{
+            font-size:26px;
+            font-weight:650;
+            color:#1f1f1f;
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+	        .page-title i{color:#2f6f9f;margin-right:0;}
+        .sub-title{font-size:13px;color:#6b7280;margin-top:6px;}
+
+        .card{
+            background:transparent;
+            border:none;
+            border-radius:0;
+            box-shadow:none;
+            padding:0;
+            margin:0 0 14px;
+        }
+
+        .el-table{
+            background:transparent;
+            border:1px solid #e0e0e0;
+        }
+        .el-table th{
+            background:#efefef!important;
+            color:#333;
+        }
+        .el-table tr{background:transparent;}
+        .el-table--striped .el-table__body tr.el-table__row--striped td{
+            background:rgba(0,0,0,.015);
+        }
+
+        .el-input__inner,.el-textarea__inner{border-radius:2px;}
+        .el-dialog{border-radius:0;box-shadow:none;}
+        .el-dialog__header{border-bottom:1px solid #eaeaea;}
+        .chart-row{display:flex;gap:16px;}
+        .chart-item{flex:1;min-height:320px;}
+        .chart-container{width:100%;height:280px;border:1px solid #e0e0e0;background:transparent;}
+    </style>
+    
+</head>
+<body>
+<div id="app">
+    <el-container>
+        <!-- 顶部导航栏 -->
+	        <el-header height="64px">
+	            <div class="brand">
+	                <div class="brand-logo"></div>
+	                <div>
+	                    <div class="brand-title">{{ $t('app.brand') }}</div>
+	                    <div class="brand-sub">{{ $t('admin.headerSub') }}</div>
+	                </div>
+	            </div>
+	            <div class="top-right">
+                <span style="margin-right: 16px;">
+                    当前用户：{{ currentUser ? currentUser.realName || currentUser.username : $t('common.notLoggedIn') }}
+                    （{{ currentUser ? currentUser.role : '' }}）
+                </span>
+                <el-button type="text" @click="logout">{{ $t('admin.logout') }}</el-button>
+                <el-select v-model="locale"
+                           size="mini"
+                           @change="switchLocale"
+                           style="width: 110px;margin-left:12px;">
+                    <el-option label="中文" value="zh"></el-option>
+                    <el-option label="English" value="en"></el-option>
+                </el-select>
+            </div>
+        </el-header>
+
+        
+	        <div class="subbar">
+ 	            <el-menu mode="horizontal"
+ 	                        class="top-menu"
+ 	                        :default-active="activeTab"
+	                        @select="handleMenuSelect"
+	                        background-color="transparent"
+	                        text-color="#2f6f9f"
+	                        active-text-color="#2f6f9f">
+ 	                    <el-menu-item index="notifications">
+ 	                        <i class="el-icon-bell"></i>
+ 	                        <span slot="title">{{ $t('admin.navNotifications') }}</span>
+ 	                    </el-menu-item>
+                    <el-menu-item index="accounts">
+                        <i class="el-icon-user-solid"></i>
+                        <span slot="title">{{ $t('admin.navAccounts') }}</span>
+                    </el-menu-item>
+                    <el-menu-item index="courses">
+                        <i class="el-icon-data-analysis"></i>
+                        <span slot="title">{{ $t('admin.navCourses') }}</span>
+                    </el-menu-item>
+                    <el-menu-item index="assignments">
+                        <i class="el-icon-edit-outline"></i>
+                        <span slot="title">{{ $t('admin.navAssignments') }}</span>
+                    </el-menu-item>
+                </el-menu>
+        </div>
+    
+        <el-main class="webdev-main">
+                <!-- 通知管理 -->
+                <section v-if="activeTab === 'notifications'">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">
+                                <i class="el-icon-bell"></i>
+                                通知管理
+                            </div>
+                            <div class="sub-title">
+                                发放系统通知或课程通知，支持删除历史通知。
+                            </div>
+                        </div>
+                    </div>
+
+	                    <div class="card">
+	                        <el-form :model="notificationForm" label-width="80px" style="max-width: 600px;">
+	                            <el-form-item label="标题">
+	                                <el-input v-model="notificationForm.title"></el-input>
+	                            </el-form-item>
+	                            <el-form-item label="课程" required>
+	                                <el-select v-model="notificationForm.courseId" filterable placeholder="请选择课程" style="width: 320px;">
+	                                    <el-option
+	                                            v-for="c in courses"
+	                                            :key="c.id"
+	                                            :label="c.courseName + ' (' + c.courseCode + ')'"
+	                                            :value="c.id">
+	                                    </el-option>
+	                                </el-select>
+	                            </el-form-item>
+	                            <el-form-item label="重要">
+	                                <el-switch v-model="notificationForm.isImportant"></el-switch>
+	                            </el-form-item>
+                            <el-form-item label="内容">
+                                <el-input
+                                        type="textarea"
+                                        rows="4"
+                                        v-model="notificationForm.content"></el-input>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" @click="createNotification">发布通知</el-button>
+                                <el-button @click="resetNotificationForm">重置</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+
+                    <div class="card">
+                        <div style="font-weight:500;margin-bottom:8px;">通知列表</div>
+                        <el-table :data="notifications" stripe style="width: 100%">
+                            <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                            <el-table-column prop="title" label="标题" min-width="160"></el-table-column>
+                            <el-table-column prop="courseId" label="课程ID" width="100"></el-table-column>
+                            <el-table-column prop="isImportant" label="重要" width="80">
+                                <template slot-scope="scope">
+                                    <el-tag size="mini" :type="scope.row.isImportant ? 'danger' : 'info'">
+                                        {{ scope.row.isImportant ? '是' : '否' }}
+                                    </el-tag>
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="publishTime" label="发布时间" min-width="180"></el-table-column>
+                            <el-table-column label="操作" width="120">
+                                <template slot-scope="scope">
+                                    <el-button type="text" size="mini"
+                                               @click="deleteNotification(scope.row)">删除</el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </section>
+
+                <!-- 账号管理 -->
+                <section v-if="activeTab === 'accounts'">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">
+                                <i class="el-icon-user-solid"></i>
+                                账号管理
+                            </div>
+                            <div class="sub-title">
+                                管理用户账号（User）及其对应的教师/学生档案信息。
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <el-form :inline="true" label-width="80px">
+                            <el-form-item label="角色筛选">
+                                <el-select v-model="userFilterRole" placeholder="全部" size="small" style="width: 160px;">
+                                    <el-option label="全部" value=""></el-option>
+                                    <el-option label="学生" value="STUDENT"></el-option>
+                                    <el-option label="教师" value="TEACHER"></el-option>
+                                    <el-option label="管理员" value="ADMIN"></el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" size="small" @click="loadUsers">刷新列表</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+
+                    <div class="card">
+                        <el-table :data="filteredUsers" stripe style="width: 100%">
+                            <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                            <el-table-column prop="username" label="用户名" min-width="140"></el-table-column>
+                            <el-table-column prop="role" label="角色" width="100"></el-table-column>
+                            <el-table-column prop="realName" label="姓名" min-width="120"></el-table-column>
+                            <el-table-column prop="email" label="邮箱" min-width="180"></el-table-column>
+                            <el-table-column prop="phone" label="手机" min-width="140"></el-table-column>
+                            <el-table-column prop="status" label="状态" width="100"></el-table-column>
+                            <el-table-column label="操作" width="260">
+                                <template slot-scope="scope">
+                                    <el-button
+                                            v-if="scope.row.role === 'TEACHER'"
+                                            type="text"
+                                            size="mini"
+                                            @click="openTeacherProfile(scope.row)">编辑教师档案</el-button>
+                                    <el-button
+                                            v-if="scope.row.role === 'STUDENT'"
+                                            type="text"
+                                            size="mini"
+                                            @click="openStudentProfile(scope.row)">编辑学生档案</el-button>
+                                    <el-button
+                                            type="text"
+                                            size="mini"
+                                            style="color:#f56c6c;"
+                                            @click="deleteUser(scope.row)">删除账号</el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+
+                    <!-- 教师档案编辑对话框 -->
+                    <el-dialog
+                            title="编辑教师档案"
+                            :visible.sync="teacherDialogVisible"
+                            width="480px">
+                        <el-form :model="teacherForm" label-width="100px">
+                            <el-form-item label="用户ID">
+                                <el-input v-model="teacherForm.userId" disabled></el-input>
+                            </el-form-item>
+                            <el-form-item label="姓名">
+                                <el-input v-model="teacherForm.realName"></el-input>
+                            </el-form-item>
+                            <el-form-item label="邮箱">
+                                <el-input v-model="teacherForm.email"></el-input>
+                            </el-form-item>
+                            <el-form-item label="手机号">
+                                <el-input v-model="teacherForm.phone"></el-input>
+                            </el-form-item>
+                            <el-form-item label="工号">
+                                <el-input v-model="teacherForm.teacherId"></el-input>
+                            </el-form-item>
+                            <el-form-item label="学院">
+                                <el-input v-model="teacherForm.department"></el-input>
+                            </el-form-item>
+                            <el-form-item label="职称">
+                                <el-input v-model="teacherForm.title"></el-input>
+                            </el-form-item>
+                            <el-form-item label="办公室">
+                                <el-input v-model="teacherForm.office"></el-input>
+                            </el-form-item>
+                        </el-form>
+                        <span slot="footer" class="dialog-footer">
+                            <el-button @click="teacherDialogVisible = false">取 消</el-button>
+                            <el-button type="primary" @click="saveTeacherProfile">保 存</el-button>
+                        </span>
+                    </el-dialog>
+
+                    <!-- 学生档案编辑对话框 -->
+                    <el-dialog
+                            title="编辑学生档案"
+                            :visible.sync="studentDialogVisible"
+                            width="480px">
+                        <el-form :model="studentForm" label-width="100px">
+                            <el-form-item label="用户ID">
+                                <el-input v-model="studentForm.userId" disabled></el-input>
+                            </el-form-item>
+                            <el-form-item label="姓名">
+                                <el-input v-model="studentForm.realName"></el-input>
+                            </el-form-item>
+                            <el-form-item label="邮箱">
+                                <el-input v-model="studentForm.email"></el-input>
+                            </el-form-item>
+                            <el-form-item label="手机号">
+                                <el-input v-model="studentForm.phone"></el-input>
+                            </el-form-item>
+                            <el-form-item label="学号">
+                                <el-input v-model="studentForm.studentId"></el-input>
+                            </el-form-item>
+                            <el-form-item label="专业">
+                                <el-input v-model="studentForm.major"></el-input>
+                            </el-form-item>
+                            <el-form-item label="班级">
+                                <el-input v-model="studentForm.className"></el-input>
+                            </el-form-item>
+                            <el-form-item label="入学年份">
+                                <el-input-number v-model="studentForm.enrollmentYear" :min="2000" :max="2100"></el-input-number>
+                            </el-form-item>
+                        </el-form>
+                        <span slot="footer" class="dialog-footer">
+                            <el-button @click="studentDialogVisible = false">取 消</el-button>
+                            <el-button type="primary" @click="saveStudentProfile">保 存</el-button>
+                        </span>
+                    </el-dialog>
+                </section>
+
+                <!-- 课程管理 / 可视化 -->
+                <section v-if="activeTab === 'courses'">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">
+                                <i class="el-icon-data-analysis"></i>
+                                课程管理与统计
+                            </div>
+                            <div class="sub-title">
+                                查看课程选课热度柱状图、按学院统计选课人数的饼图。
+                            </div>
+                        </div>
+                        <el-button type="primary" size="small" @click="loadCourseData">刷新数据</el-button>
+                    </div>
+
+                    <div class="card">
+                        <div class="chart-row">
+                            <div class="chart-item">
+                                <div style="font-weight:500;margin-bottom:8px;">课程选课热度</div>
+                                <div id="course-heat-chart" class="chart-container"></div>
+                            </div>
+                            <div class="chart-item">
+                                <div style="font-weight:500;margin-bottom:8px;">按学院统计选课人数</div>
+                                <div id="department-pie-chart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="font-weight:500;margin-bottom:8px;">课程列表</div>
+                        <el-table :data="courses" stripe style="width: 100%">
+                            <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                            <el-table-column prop="courseCode" label="课程代码" width="120"></el-table-column>
+                            <el-table-column prop="courseName" label="课程名称" min-width="180"></el-table-column>
+                            <el-table-column prop="semester" label="学期" width="130"></el-table-column>
+                            <el-table-column label="任课学院" min-width="160">
+                                <template slot-scope="scope">
+                                    {{ getCourseDepartment(scope.row) }}
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="选课人数" width="110">
+                                <template slot-scope="scope">
+                                    {{ getCourseSelectionCount(scope.row.id) }}
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </section>
+
+                <!-- 作业管理 -->
+                <section v-if="activeTab === 'assignments'">
+                    <div class="page-header">
+                        <div>
+                            <div class="page-title">
+                                <i class="el-icon-edit-outline"></i>
+                                作业管理
+                            </div>
+                            <div class="sub-title">
+                                查看所有课程作业，必要时进行删除或检查。
+                            </div>
+                        </div>
+                        <el-button type="primary" size="small" @click="loadAssignments">刷新作业</el-button>
+                    </div>
+
+                    <div class="card">
+                        <el-table :data="assignments" stripe style="width: 100%">
+                            <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                            <el-table-column prop="title" label="作业标题" min-width="200"></el-table-column>
+                            <el-table-column label="课程" min-width="200">
+                                <template slot-scope="scope">
+                                    {{ getCourseName(scope.row.courseId) }}
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="maxScore" label="满分" width="100"></el-table-column>
+                            <el-table-column prop="deadline" label="截止时间" min-width="180"></el-table-column>
+                            <el-table-column label="操作" width="120">
+                                <template slot-scope="scope">
+                                    <el-button type="text" size="mini"
+                                               style="color:#f56c6c;"
+                                               @click="deleteAssignment(scope.row)">删除</el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </section>
+            </el-main>
+        </el-container>
+</div>
+
+<script>
+    const adminMessages = {
+	        zh: {
+	            app: { brand: 'webdev' },
+	            common: { notLoggedIn: '未登录' },
+	            admin: {
+	                headerSub: '管理端',
+	                logout: '退出登录',
+	                navNotifications: '通知管理',
+	                navAccounts: '账号管理',
+	                navCourses: '课程分析',
+                navAssignments: '作业管理'
+            }
+        },
+	        en: {
+	            app: { brand: 'webdev' },
+	            common: { notLoggedIn: 'Not signed in' },
+	            admin: {
+	                headerSub: 'Admin',
+	                logout: 'Sign out',
+	                navNotifications: 'Notifications',
+	                navAccounts: 'Accounts',
+	                navCourses: 'Course analytics',
+                navAssignments: 'Assignments'
+            }
+        }
+    };
+
+    const adminLocale = localStorage.getItem('webdev_locale') || 'zh';
+    const adminI18n = new VueI18n({
+        locale: adminLocale,
+        messages: adminMessages
+    });
+
+    axios.defaults.baseURL = '/api';
+
+    new Vue({
+        el: '#app',
+        i18n: adminI18n,
+        data() {
+            return {
+                locale: adminLocale,
+                activeTab: 'notifications',
+                currentUser: null,
+
+                // 通知管理
+                notifications: [],
+                notificationForm: {
+                    title: '',
+                    content: '',
+                    courseId: null,
+                    isImportant: false
+                },
+
+                // 账号管理
+                users: [],
+                teachers: [],
+                students: [],
+                userFilterRole: '',
+                teacherDialogVisible: false,
+                studentDialogVisible: false,
+                teacherForm: {
+                    userId: null,
+                    realName: '',
+                    email: '',
+                    phone: '',
+                    teacherId: '',
+                    department: '',
+                    title: '',
+                    office: ''
+                },
+                studentForm: {
+                    userId: null,
+                    realName: '',
+                    email: '',
+                    phone: '',
+                    studentId: '',
+                    className: '',
+                    major: '',
+                    enrollmentYear: null
+                },
+
+                // 课程与选课数据
+                courses: [],
+                courseSelections: [],
+
+                // 作业管理
+                assignments: []
+            };
+        },
+        computed: {
+            filteredUsers() {
+                if (!this.userFilterRole) {
+                    return this.users;
+                }
+                return this.users.filter(u => (u.role || '').toUpperCase() === this.userFilterRole.toUpperCase());
+            }
+        },
+	        methods: {
+            switchLocale(lang) {
+                this.locale = lang;
+                this.$i18n.locale = lang;
+                localStorage.setItem('webdev_locale', lang);
+            },
+            handleMenuSelect(index) {
+                this.activeTab = index;
+                if (index === 'notifications') {
+                    this.loadNotifications();
+                } else if (index === 'accounts') {
+                    this.loadUsers();
+                } else if (index === 'courses') {
+                    this.loadCourseData();
+                } else if (index === 'assignments') {
+                    this.loadAssignments();
+                }
+            },
+
+            // 当前用户
+	            loadCurrentUser() {
+	                axios.get('/user/me').then(res => {
+	                    const body = res.data || {};
+	                    if (body.success) {
+	                        this.currentUser = body.data;
+	                        if (!this.currentUser || (this.currentUser.role || '').toUpperCase() !== 'ADMIN') {
+	                            this.$message.warning('当前用户不是管理员，部分功能可能受限');
+	                        }
+	                        this.loadAllCourses();
+	                        // 初始加载通知数据
+	                        this.loadNotifications();
+	                    } else {
+	                        this.$message.error(body.message || '请先登录');
+	                    }
+	                }).catch(() => {
+                    this.$message.error('获取当前用户失败');
+                });
+	            },
+
+	            loadAllCourses() {
+	                axios.get('/course/listAll').then(res => {
+	                    const body = res.data || {};
+	                    if (body.success) {
+	                        this.courses = body.data || [];
+	                    }
+	                }).catch(() => {
+	                });
+	            },
+
+            logout() {
+                axios.post('/user/logout').then(() => {
+                    this.currentUser = null;
+                    this.$message.success('已退出登录');
+                    window.location.href = '/login.html';
+                });
+            },
+
+            // 通知管理
+            loadNotifications() {
+                axios.get('/notification/listAll').then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.notifications = body.data || [];
+                    } else if (body.message) {
+                        this.$message.error(body.message);
+                    }
+                });
+            },
+	            createNotification() {
+	                if (!this.notificationForm.title || !this.notificationForm.content) {
+	                    this.$message.error('标题和内容不能为空');
+	                    return;
+	                }
+	                if (!this.notificationForm.courseId) {
+	                    this.$message.error('请选择课程');
+	                    return;
+	                }
+	                const payload = {
+	                    title: this.notificationForm.title,
+	                    content: this.notificationForm.content,
+	                    courseId: this.notificationForm.courseId,
+	                    isImportant: this.notificationForm.isImportant,
+	                    publisherId: this.currentUser ? this.currentUser.id : null
+	                };
+                axios.post('/notification/create', payload).then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.$message.success('通知已发布');
+                        this.resetNotificationForm();
+                        this.loadNotifications();
+                    } else {
+                        this.$message.error(body.message || '发布失败');
+                    }
+                });
+            },
+            resetNotificationForm() {
+                this.notificationForm = {
+                    title: '',
+                    content: '',
+                    courseId: null,
+                    isImportant: false
+                };
+            },
+            deleteNotification(row) {
+                this.$confirm('确定删除该通知吗？', '提示', {
+                    type: 'warning'
+                }).then(() => {
+                    axios.delete('/notification/' + row.id).then(res => {
+                        const body = res.data || {};
+                        if (body.success) {
+                            this.$message.success('删除成功');
+                            this.loadNotifications();
+                        } else {
+                            this.$message.error(body.message || '删除失败');
+                        }
+                    });
+                }).catch(() => {
+                });
+            },
+
+            // 账号管理
+            loadUsers() {
+                axios.get('/user/listAll').then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.users = body.data || [];
+                        this.loadTeachers();
+                        this.loadStudents();
+                    } else {
+                        this.$message.error(body.message || '获取用户列表失败');
+                    }
+                });
+            },
+            loadTeachers() {
+                axios.get('/teacher/listAll').then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.teachers = body.data || [];
+                    }
+                });
+            },
+            loadStudents() {
+                axios.get('/student/listAll').then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.students = body.data || [];
+                    }
+                });
+            },
+            deleteUser(user) {
+                this.$confirm(`确定删除账号「${user.username}」吗？将同时删除对应的教师/学生档案。`, '提示', {
+                    type: 'warning'
+                }).then(() => {
+                    axios.post('/user/delete', {userId: user.id}).then(res => {
+                        const body = res.data || {};
+                        if (body.success) {
+                            this.$message.success('删除成功');
+                            this.loadUsers();
+                        } else {
+                            this.$message.error(body.message || '删除失败');
+                        }
+                    });
+                }).catch(() => {
+                });
+            },
+            openTeacherProfile(user) {
+                const teacher = this.teachers.find(t => t.userId === user.id) || {};
+                this.teacherForm = {
+                    userId: user.id,
+                    realName: user.realName || '',
+                    email: user.email || '',
+                    phone: user.phone || '',
+                    teacherId: teacher.teacherId || '',
+                    department: teacher.department || '',
+                    title: teacher.title || '',
+                    office: teacher.office || ''
+                };
+                this.teacherDialogVisible = true;
+            },
+            saveTeacherProfile() {
+                axios.post('/teacher/updateProfile', this.teacherForm).then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.$message.success('教师档案已更新');
+                        this.teacherDialogVisible = false;
+                        this.loadUsers();
+                    } else {
+                        this.$message.error(body.message || '更新失败');
+                    }
+                });
+            },
+            openStudentProfile(user) {
+                const student = this.students.find(s => s.userId === user.id) || {};
+                this.studentForm = {
+                    userId: user.id,
+                    realName: user.realName || '',
+                    email: user.email || '',
+                    phone: user.phone || '',
+                    studentId: student.studentId || '',
+                    className: student.className || '',
+                    major: student.major || '',
+                    enrollmentYear: student.enrollmentYear || null
+                };
+                this.studentDialogVisible = true;
+            },
+            saveStudentProfile() {
+                axios.post('/student/updateProfile', this.studentForm).then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.$message.success('学生档案已更新');
+                        this.studentDialogVisible = false;
+                        this.loadUsers();
+                    } else {
+                        this.$message.error(body.message || '更新失败');
+                    }
+                });
+            },
+
+            // 课程与统计
+            loadCourseData() {
+                axios.get('/course/listAll').then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.courses = body.data || [];
+                        // 选课记录
+                        axios.get('/courseSelection/listAll').then(res2 => {
+                            const body2 = res2.data || {};
+                            if (body2.success) {
+                                this.courseSelections = body2.data || [];
+                            } else {
+                                this.courseSelections = [];
+                            }
+                            // 确保教师信息已就绪，用于学院统计
+                            if (!this.teachers || this.teachers.length === 0) {
+                                this.loadTeachers();
+                            }
+                            this.buildCourseCharts();
+                        });
+                    } else {
+                        this.$message.error(body.message || '获取课程列表失败');
+                    }
+                });
+            },
+            getCourseSelectionCount(courseId) {
+                if (!courseId || !this.courseSelections) return 0;
+                return this.courseSelections.filter(s => s.courseId === courseId).length;
+            },
+            getCourseDepartment(course) {
+                if (!course || !this.teachers) return '';
+                const teacher = this.teachers.find(t => t.id === course.teacherId);
+                return teacher && teacher.department ? teacher.department : '未设置学院';
+            },
+            buildCourseCharts() {
+                this.$nextTick(() => {
+                    const barDom = document.getElementById('course-heat-chart');
+                    const pieDom = document.getElementById('department-pie-chart');
+                    if (!barDom || !pieDom) {
+                        return;
+                    }
+
+                    // 选课热度：按课程统计选课人数
+                    const barData = this.courses.map(c => {
+                        return {
+                            name: c.courseName || ('课程#' + c.id),
+                            count: this.getCourseSelectionCount(c.id)
+                        };
+                    });
+
+                    const barChart = echarts.init(barDom);
+                    barChart.setOption({
+                        tooltip: {trigger: 'axis'},
+                        xAxis: {
+                            type: 'category',
+                            data: barData.map(d => d.name),
+                            axisLabel: {interval: 0, rotate: 30}
+                        },
+                        yAxis: {
+                            type: 'value',
+                            name: '选课人数'
+                        },
+                        series: [{
+                            type: 'bar',
+                            data: barData.map(d => d.count),
+                            itemStyle: {color: '#409eff'}
+                        }]
+                    });
+
+                    // 学院饼图：按教师学院聚合选课人数
+                    const teacherDeptMap = {};
+                    (this.teachers || []).forEach(t => {
+                        teacherDeptMap[t.id] = t.department || '未设置学院';
+                    });
+
+                    const deptCountMap = {};
+                    this.courses.forEach(c => {
+                        const dept = teacherDeptMap[c.teacherId] || '未设置学院';
+                        const count = this.getCourseSelectionCount(c.id);
+                        deptCountMap[dept] = (deptCountMap[dept] || 0) + count;
+                    });
+
+                    const pieData = Object.keys(deptCountMap).map(name => ({
+                        name: name,
+                        value: deptCountMap[name]
+                    }));
+
+                    const pieChart = echarts.init(pieDom);
+                    pieChart.setOption({
+                        tooltip: {trigger: 'item'},
+                        legend: {orient: 'vertical', left: 'left'},
+                        series: [{
+                            type: 'pie',
+                            radius: '65%',
+                            center: ['50%', '55%'],
+                            data: pieData,
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.2)'
+                                }
+                            }
+                        }]
+                    });
+                });
+            },
+            getCourseName(courseId) {
+                const c = this.courses.find(c => c.id === courseId);
+                return c ? c.courseName : ('课程#' + courseId);
+            },
+
+            // 作业管理
+            loadAssignments() {
+                axios.get('/assignment/listAll').then(res => {
+                    const body = res.data || {};
+                    if (body.success) {
+                        this.assignments = body.data || [];
+                        // 确保课程数据存在以显示课程名称
+                        if (!this.courses || this.courses.length === 0) {
+                            axios.get('/course/listAll').then(res2 => {
+                                const body2 = res2.data || {};
+                                if (body2.success) {
+                                    this.courses = body2.data || [];
+                                }
+                            });
+                        }
+                    } else {
+                        this.$message.error(body.message || '获取作业列表失败');
+                    }
+                });
+            },
+            deleteAssignment(row) {
+                this.$confirm('确定删除该作业吗？对应提交记录不会自动删除。', '提示', {
+                    type: 'warning'
+                }).then(() => {
+                    axios.delete('/assignment/' + row.id).then(res => {
+                        const body = res.data || {};
+                        if (body.success) {
+                            this.$message.success('删除成功');
+                            this.loadAssignments();
+                        } else {
+                            this.$message.error(body.message || '删除失败');
+                        }
+                    });
+                }).catch(() => {
+                });
+            }
+        },
+        mounted() {
+            this.loadCurrentUser();
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rewrite datasource credentials to env vars
+        run: |
+          perl -pi -e 's/^\\s{4}username:.*/    username: ${SPRING_DATASOURCE_USERNAME:root}/' src/main/resources/application.yml
+          perl -pi -e 's/^\\s{4}password:.*/    password: ${SPRING_DATASOURCE_PASSWORD:test123456}/' src/main/resources/application.yml
+
+      - name: Verify application.yml uses env vars
+        run: |
+          grep -q 'username: ${SPRING_DATASOURCE_USERNAME' src/main/resources/application.yml
+          grep -q 'password: ${SPRING_DATASOURCE_PASSWORD' src/main/resources/application.yml
+          ! grep -q 'cql!@#QWE2006' src/main/resources/application.yml
