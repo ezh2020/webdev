@@ -12,7 +12,7 @@ cd /path/to/your/workdir
 
 2) 克隆本项目并进入项目根目录
 ```bash
-git clone <YOUR_GITHUB_REPO_URL>.git
+git clone https://github.com/ezh2020/webdev.git
 cd webdev
 ```
 
