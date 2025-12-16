@@ -19,7 +19,6 @@ spring:
   datasource:
     username: ${SPRING_DATASOURCE_USERNAME:root}
     password: ${SPRING_DATASOURCE_PASSWORD:test123456}
-    # 显式开启 UTF-8，避免从数据库读取中文通知时出现“å®žéªŒ...” 等乱码
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/course_management_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:

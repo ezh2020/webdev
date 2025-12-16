@@ -1,6 +1,8 @@
 FROM mysql:8.0
 
+# 设置默认字符集，避免导入/读取中文出现乱码
+COPY mysql-conf/charset.cnf /etc/mysql/conf.d/charset.cnf
+
 # 将项目中的初始化 SQL 拷贝到 MySQL 官方约定的初始化目录
 # 第一次启动并初始化数据目录时，会自动执行这里的 init.sql
 COPY ["Course Management Platform_sql_20251019 .sql", "/docker-entrypoint-initdb.d/init.sql"]
-
